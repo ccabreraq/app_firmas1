@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>PDFJSAnnotate</title>
+  <link rel="stylesheet" type="text/css" href="shared/toolbar.css"/>
+  <link rel="stylesheet" type="text/css" href="shared/pdf_viewer.css"/>
+  <link rel="stylesheet" type="text/css" href="shared/formulario.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+ <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+ 
+     <meta name="csrf-token" content="XYZ123">
+ 
+  <style type="text/css">
+    body {
+      background-color: #eee;
+      font-family: sans-serif;
+      margin: 0;
+    }
+	.toolbar {
+      background-color:#C4C6D5;
+      font-family: sans-serif;
+	
+	}
+	.btn {
+	  background-color: DodgerBlue;
+	  border: none;
+	  color: white;
+	  padding: 12px 16px;
+	  font-size: 16px;
+	  cursor: pointer;
+	}	
+    .pdfViewer .canvasWrapper {
+      box-shadow: 0 0 3px #bbb;
+    }
+    .pdfViewer .page {
+      margin-bottom: 10px;
+    }
+
+    .annotationLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    #content-wrapper {
+      position: absolute;
+      top: 35px;
+      left: 0;
+      right: 8px;
+      bottom: 0;
+      overflow: auto;
+    }
+
+    #comment-wrapper {
+      position: absolute;
+      top: 35px;
+      right: 0;
+      bottom: 0;
+      overflow: auto;
+      width: 1px;
+      background: #eaeaea;
+      border-left: 1px solid #d0d0d0;
+    }
+    #comment-wrapper h4 {
+      margin: 10px;
+    }
+    #comment-wrapper .comment-list {
+      font-size: 12px;
+      position: absolute;
+      top: 38px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    #comment-wrapper .comment-list-item {
+      border-bottom: 1px solid #d0d0d0;
+      padding: 10px;
+    }
+    #comment-wrapper .comment-list-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 47px;
+      overflow: auto;
+    }
+    #comment-wrapper .comment-list-form {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px;
+    }
+    #comment-wrapper .comment-list-form input {
+      padding: 5px;
+      width: 100%;
+    }
+	/* The Modal (background) */
+	.modal {
+	  display: none; /* Hidden by default */
+	  position: fixed; /* Stay in place */
+	  z-index: 1; /* Sit on top */
+	  padding-top: 60px; /* Location of the box */
+	  left: 0;
+	  top: 0;
+	  width: 100%; /* Full width */
+	  height: 100%; /* Full height */
+	  overflow: auto; /* Enable scroll if needed */
+	  background-color: rgb(0,0,0); /* Fallback color */
+	  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	}
+
+	/* Modal Content */
+	.modal-content {
+	  background-color: #fefefe;
+	  margin: auto;
+	  padding: 20px;
+	  border: 1px solid #888;
+	  width: 80%;
+	}
+
+	/* The Close Button */
+	.close2 {
+	  color: #aaaaaa;
+	  float: right;
+	  font-size: 28px;
+	  font-weight: bold;
+	}
+
+	.close2:hover,
+	.close2:focus {
+	  color: #000;
+	  text-decoration: none;
+	  cursor: pointer;
+	}	
+	/* The Close Button */
+	.close1 {
+	  color: #aaaaaa;
+	  float: right;
+	  font-size: 28px;
+	  font-weight: bold;
+	}
+
+	.close1:hover,
+	.close1:focus {
+	  color: #000;
+	  text-decoration: none;
+	  cursor: pointer;
+	}	
+	.modal_header {
+	  padding: 2px 16px;
+	  background-color: #4B5DDF;
+	  color: white;
+	}
+
+	.modal_body {padding: 2px 16px;}
+
+	.modal-footer {
+	  padding: 2px 16px;
+	  background-color: #4B5DDF;
+	  color: white;
+	}	
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+ <!--   <button class="cursor" type="button" title="Activar Cursor"  data-tooltype="cursor"><i class="fa fa-i-cursor" aria-hidden="true"></i></button> -->
+    <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">?</button>
+
+
+    <button class="rectangle" type="button" title="activar Rectangulo de Firma" data-tooltype="area"><i class="fa fa-th" aria-hidden="true"></i></button>
+	
+    <button class="comment" type="button" title="Comment" data-tooltype="point">🗨</button>
+   <!-- <button class="comment" type="button" title="activar comentario" data-tooltype="point"><i class="fa fa-comments" aria-hidden="true"></i></button>
+
+    <button class="eraser" type="button" title="activar Limpiar" data-tooltype="eraser"><i class="fa fa-eraser" aria-hidden="true"></i></button> -->
+    <button class="eraser" type="button" title="Eraser" data-tooltype="eraser">⌫</button>
+    <div class="spacer"></div>
+
+    <a href="javascript://" class="clear" title="Limpiar todas las anotaciones"><i class="fa fa-window-close-o" aria-hidden="true"></i></a>
+
+    <div class="spacer"></div>
+
+    <select class="scale">
+      <option value=".5">50%</option>
+      <option value="1">100%</option>
+      <option value="1.33">133%</option>
+      <option value="1.5">150%</option>
+      <option value="2">200%</option>
+    </select>
+
+
+    <div class="spacer"></div>
+
+     <div class="spacer"></div>
+    <a href="javascript://" class="subir" title="sube documento del cliente para configurar"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+
+    <div class="spacer"></div>
+    <a  href="javascript://" class="crear" title="Crea documento para proceso de firmas"><i class="fa fa-file" aria-hidden="true"></i></a>
+
+	</div>
+  <div id="content-wrapper">
+    <div id="viewer" class="pdfViewer"></div>
+  </div>
+  <div id="comment-wrapper">
+    <h4>Firmantes</h4>
+    <div class="comment-list">
+
+      <div class="comment-list-container">
+        <div class="comment-list-item">sin comentarios</div>
+      </div>
+      <form class="comment-list-form" style="display:none;">
+        <input type="text" placeholder="Agrega comentario"/>
+      </form>
+	  
+
+    </div>
+	
+	<!-- The Modal -->
+	<div id="Modal_form" class="modal_f">
+
+	  <!-- Modal content -->
+	  <div class="modal-content_f">
+		<div class="modal-header_f">
+		  <span class="close_f">&times;</span>
+		  <h2>Datos del Firmante</h2>
+		</div>
+		<div class="modal-body_f">
+            <form id="myForm">
+			  <div class="form-group row">
+				<label for="cedula" class="col-sm-3 col-form-label">Cedula:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="cedula" placeholder="cedula del firmante">
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="nombres" class="col-sm-3 col-form-label">Nombres:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="nombres" placeholder="Nombres del firmante">
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="apellidos" class="col-sm-3 col-form-label">Apellidos:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="apellidos" placeholder="apellidos del firmante">
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="celular" class="col-sm-3 col-form-label">Celular:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="celular" placeholder="celular del firmate">
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="email" class="col-sm-3 col-form-label">Email:</label>
+				<div class="col-sm-9">
+				  <input type="email" class="form-control" id="email" placeholder="email del firmante">
+				</div>
+			  </div>
+			  <button type="submit" class="btn btn-primary">Grabar</button>			  
+			</form>
+		</div>
+	  </div>
+
+	</div>		  	
+  </div>
+	<!-- The Modal creacion de documento-->
+	<div id="myModal" class="modal">
+
+	  <!-- Modal content -->
+	  <div class="modal-content">
+		 <div class="modal_header">
+			<span class="close2">&times;</span>
+			<h3>Grabar documento para proceso de firmas</h3>
+		  </div>
+		  <div class="modal_body">
+			
+            <form id="formsalvar">
+			  <div class="form-row">
+				<div class="form-group col-md-12">
+				  <label for="nombre">Nombre del Documento</label>
+				  <input type="text" class="form-control" id="nombre">
+				</div>
+				<div class="form-group col-md-12">
+				  <label for="descripcion">Descripcion del documento</label>
+				  <input type="text" class="form-control" id="descripcion">
+				</div>
+			  </div>
+			  <div class="form-group">
+				<label for="inputAddress">Address</label>
+				<input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
+			  </div>
+			  <button  type="submit" class="btn btn-primary" class='aaaaa'>Salvar</button>
+			</form>
+
+		  </div>
+      </div>
+
+	</div>  
+	<!-- The Modal subir archivo -->
+	<div id="myModal1" class="modal">
+
+	  <!-- Modal content -->
+	  <div class="modal-content">
+		 <div class="modal_header">
+			<span class="close1">&times;</span>
+			<h3>Seleccione el archivo a ser configurado</h3>
+		  </div>
+		  <div class="modal_body">
+           <form id="upload-widget" method="post" action="/upload" class="dropzone">
+			  <div class="fallback">
+				<input name="file" type="file" />
+			  </div>			
+			</form>
+		  </div>
+      </div>
+
+	</div>  
+
+
+	
+  <script src="shared/pdf.js"></script>
+  <script src="shared/pdf_viewer.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
+
+
