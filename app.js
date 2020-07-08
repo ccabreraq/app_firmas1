@@ -118,7 +118,7 @@ async function gen_pdf(html) {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:"https://09a81fe2436a.ngrok.io/index2.html", renderType: "pdf",renderSettings: {pdfOptions: {format: "onepage"}} };
+			   var pageRequest = { url:"https://app-firmas1.herokuapp.com/index2.html", renderType: "pdf",renderSettings: {pdfOptions: {format: "onepage"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
@@ -264,7 +264,7 @@ async function gen_pdf(html) {
 			  
 			  console.log(reg)
 		  
-			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000/"+clave+"/"+reg.annotation
+			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000//#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
 			var env_mail = await f_mail(reg,req.body )
 			console.log(env_sms)
