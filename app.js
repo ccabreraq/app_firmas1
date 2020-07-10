@@ -118,7 +118,7 @@ async function gen_pdf(html) {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:"https://app-firmas1.herokuapp.com/index2.html", renderType: "pdf",renderSettings: {pdfOptions: {format: "onepage"}} };
+			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{%22type%22:%22area%22,%22x%22:53.38345864661654,%22y%22:599.2481203007518,%22width%22:315.7894736842106,%22height%22:70.67669172932335,%22backgroundColor%22:%22red%22,%22status%22:%22firmado%22,%22class%22:%22Annotation%22,%22uuid%22:%221fc380df-d394-4275-8753-65b6018f067a%22,%22page%22:1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "onepage"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
@@ -264,7 +264,7 @@ async function gen_pdf(html) {
 			  
 			  console.log(reg)
 		  
-			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000//#/Baz/"+clave+"/"+reg.annotation
+			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000/#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
 			var env_mail = await f_mail(reg,req.body )
 			console.log(env_sms)
@@ -291,6 +291,13 @@ async function gen_pdf(html) {
 		
 		//res.status(200).send();
 	})
+	
+	app.get("/b", function(req, res){
+		console.log(req);
+		//gen_pdf()
+		res.send("GET res sent from webpack dev server")
+	})
+	
 	
 	// envio mail por 
 	const f_mail = function(firmante, reg) {
