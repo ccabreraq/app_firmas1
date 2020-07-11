@@ -365,12 +365,12 @@ async function gen_pdf() {
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
  		 '"destinatario":['+mail+'],'+
-		 //"copiaOculta":["jairandresdiazp@gmail.com"],
 		 '"canal":"EMAIL",'+
 		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  "'+mensaje+'}'	
              
+		 console.log(mensaje)
 		 
-		 //console.log(dataxx7)
+		 console.log(dataxx7)
                 
 
                 // llamo funcion de verificacion de vigencia de poliza
