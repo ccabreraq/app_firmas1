@@ -18,14 +18,6 @@ var indexRouter = require('./routes/index');
 
 var app = express();
 
-var nodemailer = require('nodemailer');
-var transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: 'ccabreraq3@gmail.com',
-        pass: 'ccabreraq1'
-    }
-});
 
 const storage = multer.diskStorage({
     destination:path.join(__dirname,'public/uploads'),
@@ -109,42 +101,46 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
 	  }
 });	
 
-async function gen_pdf(html) {
+async function gen_pdf() {
 
     var apiKey = 'ak-e1b1d-chnt0-ra0y7-yemfh-ahrdt'; //leave undefined to use a demo key.  get a free key at https://Dashboard.PhantomJsCloud.com
-
-    var myPromise = () => {
-       return new Promise((resolve, reject) => {
+    console.log("qqq")
+ //   var myPromise = () => {
+ //      return new Promise((resolve, reject) => {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{%22type%22:%22area%22,%22x%22:53.38345864661654,%22y%22:599.2481203007518,%22width%22:315.7894736842106,%22height%22:70.67669172932335,%22backgroundColor%22:%22red%22,%22status%22:%22firmado%22,%22class%22:%22Annotation%22,%22uuid%22:%221fc380df-d394-4275-8753-65b6018f067a%22,%22page%22:1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "onepage"}} };
+			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{"type":"area","x":53.38345864661654,"y":599.2481203007518,"width":315.7894736842106,"height":70.67669172932335,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"1fc380df-d394-4275-8753-65b6018f067a","page":1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "viewport"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
+				//console.log("qqqqqwwww")
 				if (userResponse.statusCode != 200) {
 					console.log(" errror invalid status code" + userResponse.statusCode);
 					reject("err") 
-					//return ("")
+					return ("error")
 				} else {
-					//console.log(userResponse.content)
+					console.log("userResponse.content")
 					
 				
-					fs.writeFile("prueba1.pdf", userResponse.content.data, {
+					fs.writeFile("public/uploads/prueba1.pdf", userResponse.content.data, {
 						encoding: userResponse.content.encoding,
+						
                         //resolve("ok");	
+						
 						
 					}, function (err) {
 						console.log("captured page written to " + userResponse.content.name);
                         //resolve("erro");				
 						
 					});
-					resolve(userResponse.content.data);
+					//resolve(userResponse.content.data);
+					console.log(userResponse.content.data)
 
 				}
 			});
-	   })
-    };
+	   //})
+    //};
 	
    //var result = await myPromise();
    ////console.log(result)
@@ -266,8 +262,10 @@ async function gen_pdf(html) {
 		  
 			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000/#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
-			var env_mail = await f_mail(reg,req.body )
+			var env_mail = await f_sms(mensajesms1,reg.content.email);
+			//var env_mail = await f_mail(reg,req.body )
 			console.log(env_sms)
+			console.log(env_mail)
 		  }
 		
 		
@@ -292,44 +290,12 @@ async function gen_pdf(html) {
 		//res.status(200).send();
 	})
 	
-	app.get("/b", function(req, res){
-		console.log(req);
-		//gen_pdf()
+	app.get("/get/b", function(req, res){
+		//console.log(req);
+		gen_pdf()
 		res.send("GET res sent from webpack dev server")
 	})
 	
-	
-	// envio mail por 
-	const f_mail = function(firmante, reg) {
-		
-		var linkx = 'http://localhost:3000/#/Baz/'+reg._id+'/'+firmante.annotation
-	
-	   var mailOptions = {
-		   from: 'Asistente EnterID', // sender address
-		   to:firmante.content.email, // list of receivers
-		   subject: 'Firma de documento xxxxx', // Subject line
-		   html: "<HTML>\r\n<p>Datos del firmante:</p>\r\n"+
-				 "<p>Nombre     : "+firmante.content.nombres+"</p>"+
-				 "<p><a href='"+linkx+"'>Visit W3Schools.com!</a></p>"+
-				 "\r\n</HTML>\r\n"
-		   //html: {path:  'http://localhost:8080/form.html'}
-		  //text: 'datos de emision', // plaintext body
-	   };
-
-
-	  // send mail with defined transport object
-	  transporter.sendMail(mailOptions, function(error, info){
-		if(error){
-			return console.log(error);
-		}
-		console.log('Message sent: ' + info.response);
-		 res.send(200, {
-			hits: 'ok'
-		 });
-
-	  });
-
-	};	
 	
 	// envio sms por infobit 
 	const f_sms = function(mensaje,numero) {
@@ -344,6 +310,65 @@ async function gen_pdf(html) {
 		 '"argumentosPersonalizados":{"nit":"12345"}}'  
 
 
+		 
+		 //console.log(dataxx7)
+                
+
+                // llamo funcion de verificacion de vigencia de poliza
+
+                  if (process.env.NODE_ENV == 'produccion') {
+                      //var vurl = 'https://pre-idocumentos-mensajeria.azurewebsites.net/api/mensajeria/enviar';
+					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/mensajeria/enviar';
+                  }else{
+                     // var vurl = 'http://pruebas.seguros.transfiriendo.com:8090/soatnetseapi/api/Vehicle/GetVehicle';
+                      //var vurl = 'https://pre-idocumentos-mensajeria.azurewebsites.net/api/mensajeria/enviar';
+					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/mensajeria/enviar';
+
+                  }
+
+
+                var options = { method: 'POST',
+                  url: vurl,
+                  body: dataxx7,
+				  headers: {
+					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+					'Content-Type': 'application/json'
+				  }				  
+                 };
+				 
+				  return new Promise((resolve, reject) => {
+	
+					request(options, (error, response, body) => {
+					  if (response) {
+						  
+						var dato1 = JSON.parse(body); 
+						//console.log(dato1)
+						//var dato1 = JSON.parse(datoxx17);
+						return resolve(dato1);
+						
+					  }
+					  if (error) {
+						return reject(error);
+					  }
+					});  
+							  
+				  }); 
+				 
+				 
+
+	};	
+
+	// envio sms por infobit 
+	const f_email = function(mensaje,numero) {
+
+        var dataxx7 = '{"identificadorTransaccion":"xxx",'+
+		 '"perfil":"PERFIL UNO",'+
+ 		 '"destinatario":['+mail+'],'+
+		 //"copiaOculta":["jairandresdiazp@gmail.com"],
+		 '"canal":"EMAIL",'+
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  "'+mensaje+'}'	
+             
 		 
 		 //console.log(dataxx7)
                 
