@@ -367,7 +367,8 @@ async function gen_pdf() {
  		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
 		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'	
-             
+         
+		 
 		 console.log(mensaje)
 		 
 		 console.log(dataxx7)
