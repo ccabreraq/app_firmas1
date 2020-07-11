@@ -364,9 +364,9 @@ async function gen_pdf() {
 
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
- 		 '"destinatario":['+mail+'],'+
+ 		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  "'+mensaje+'}'	
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}'	
              
 		 console.log(mensaje)
 		 
