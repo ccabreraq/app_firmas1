@@ -360,7 +360,7 @@ async function gen_pdf() {
 	};	
 
 	// envio sms por infobit 
-	const f_email = function(mensaje,mail) {
+	const f_mail = function(mensaje,mail) {
 
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
