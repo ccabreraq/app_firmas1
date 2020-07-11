@@ -262,7 +262,7 @@ async function gen_pdf() {
 		  
 			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000/#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
-			var env_mail = await f_sms(mensajesms1,reg.content.email);
+			var env_mail = await f_mail(mensajesms1,reg.content.email);
 			//var env_mail = await f_mail(reg,req.body )
 			console.log(env_sms)
 			console.log(env_mail)
@@ -360,7 +360,7 @@ async function gen_pdf() {
 	};	
 
 	// envio sms por infobit 
-	const f_email = function(mensaje,numero) {
+	const f_email = function(mensaje,mail) {
 
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
