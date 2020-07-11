@@ -110,7 +110,7 @@ async function gen_pdf() {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{"type":"area","x":53.38345864661654,"y":599.2481203007518,"width":315.7894736842106,"height":70.67669172932335,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"1fc380df-d394-4275-8753-65b6018f067a","page":1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "viewport"}} };
+			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{"type":"area","x":53.38345864661654,"y":599.2481203007518,"width":315.7894736842106,"height":70.67669172932335,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"1fc380df-d394-4275-8753-65b6018f067a","page":1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "viewport"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
