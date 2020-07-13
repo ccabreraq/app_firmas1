@@ -178,14 +178,6 @@ async function gen_pdf() {
 		  then(reg_docg => {              
 			console.log(reg_docg); // 'A'
 			
-			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
-			var reg_doc = reg_docg[0];
-			var rect = reg_doc.rect;
-			var y;
-
-			for (y of rect) {
-					  cambia_rect(y, clave);;
-			}
 			// recooro vetor de personas buscando el que debe cambia
 			var firmantes = reg_doc.firmantes
 			var x;
@@ -194,23 +186,35 @@ async function gen_pdf() {
 			for (x of firmantes) {
 					  cambia_firmantes(x, clave);;
 			}
+
+			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
+			var reg_doc = reg_docg[0];
+			var rect = reg_doc.rect;
+			var y;
+            var content = {}
+			for (y of rect) {
+					  cambia_rect(y, clave);;
+			}
 			
-			  async function cambia_rect(reg, clave) {						  
-				  if (vuuid == reg.uuid) {
-					 reg.status = 'firmado' 
-				  }
-			  }
 			  async function cambia_firmantes(reg, clave) {						  
 				  if (vuuid == reg.annotation) {
 					 reg.content.status = 'firmado' 
 					 reg.content.fecha = new Date();
+					 content = reg.content
 				  }
 				  if (reg.content.status == 'firmado') {
 					 cant_firmantes = cant_firmantes + 1; 
 				  }
 		  
 			  }
-			
+
+			  async function cambia_rect(reg, clave) {						  
+				  if (vuuid == reg.uuid) {
+					 reg.status = 'firmado' 
+					 reg.content = content;
+				  }
+			  }
+			  
 			// reviso si ya se firmaron todos los personas y si es asi cambio el status del registro,
 			var vstatus = reg_doc.status
 			if ( reg_doc.num_firmantes == cant_firmantes ) {
