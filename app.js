@@ -178,6 +178,8 @@ async function gen_pdf() {
 		  then(reg_docg => {              
 			console.log(reg_docg); // 'A'
 			
+			var reg_doc = reg_docg[0];
+			
 			// recooro vetor de personas buscando el que debe cambia
 			var firmantes = reg_doc.firmantes
 			var x;
@@ -188,7 +190,6 @@ async function gen_pdf() {
 			}
 
 			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
-			var reg_doc = reg_docg[0];
 			var rect = reg_doc.rect;
 			var y;
             var content = {}
