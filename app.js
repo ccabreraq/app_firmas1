@@ -299,6 +299,7 @@ async function gen_pdf() {
 	})
 
 	
+	
 	app.post("/inicia_firmas", bodyParser.json(), function(req, res){
 		console.log(req.body);
 				
@@ -416,17 +417,18 @@ async function gen_pdf() {
 	};	
 
 	// envio sms por infobit 
-	const f_email = function(mensaje,mail) {
+	const f_mail = function(mensaje,mail) {
 
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
- 		 '"destinatario":['+mail+'],'+
-		 //"copiaOculta":["jairandresdiazp@gmail.com"],
+ 		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  "'+mensaje+'}'	
-             
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'	
+         
 		 
-		 //console.log(dataxx7)
+		 console.log(mensaje)
+		 
+		 console.log(dataxx7)
                 
 
                 // llamo funcion de verificacion de vigencia de poliza
@@ -472,7 +474,7 @@ async function gen_pdf() {
 				 
 				 
 
-	};	
+	};		
 	
 
 module.exports = app;
