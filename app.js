@@ -16,7 +16,16 @@ var fs = require('fs');
 var indexRouter = require('./routes/index');
 //var usersRouter = require('./routes/users');
 
-var app = express();
+var owncloud = require('js-owncloud-client');
+var rurl = 'https://pre.dinicloud.transfiriendo.com/';
+var rurlwebdav = rurl + "remote.php/webdav/";
+
+var oc = new owncloud(rurl);
+oc.login('Adm_000000000', 'casaauto');
+//var clientx = createClient(rurlwebdav,'Adm_000000000', 'casaauto');
+
+
+  var app = express();
 
 
 const storage = multer.diskStorage({
@@ -26,6 +35,7 @@ const storage = multer.diskStorage({
         cb(null,"user1"+"_aa.pdf");
     }
 });
+//var storage = multer.memoryStorage()
 
 var upload = multer({ storage: storage })
 var upload1 = multer()
@@ -57,6 +67,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use('/', indexRouter);
 //app.use('/users', usersRouter);
@@ -110,7 +121,7 @@ async function gen_pdf() {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index2.html?file=user1_archivo.pdf&datos=[{"type":"area","x":53.38345864661654,"y":599.2481203007518,"width":315.7894736842106,"height":70.67669172932335,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"1fc380df-d394-4275-8753-65b6018f067a","page":1}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "viewport"}} };
+			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index4.html?file=user1_archivo.pdf&datos=[{"type":"area","x":38.34586466165413,"y":629.3233082706766,"width":539.0977443609023,"height":64.66165413533838,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"17cce481-bb0e-4fda-a8c5-a4499a376968","page":1,"content":{"cedula":"79299848","nombres":"Carlos ","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":"2020-07-13T02:48:00.781Z"}},{"type":"area","x":41.35338345864662,"y":711.2781954887217,"width":534.5864661654135,"height":65.41353383458659,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"1bb2582e-da01-490a-a384-e97db146a7cf","page":1,"content":{"cedula":"79299847","nombres":"Santiago","apellidos":"Cabrera","celular":"3204903664","email":"ccabrera@transfiriendo.com","status":"firmado","fecha":"2020-07-13T03:20:42.010Z"}}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "Letter",emulateMedia:"print"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
@@ -152,6 +163,16 @@ async function gen_pdf() {
 	app.post('/upload', upload.single('file'), (req, res) => {
 	  if (!req.file.mimetype.startsWith('application/*')) {
 		  console.log(req.file)
+		  
+			//oc.files.putFileContents('/dos/aa.pdf', req.file.buffer).then(status => {
+			//	//response.send(status);
+			//	console.log(status)
+			//}).catch(error => {
+			//	//response.send(error);}
+			//	console.log(error)
+			//});
+		  
+		  
 		//return res.status(422).json({
 		//  error :'El archivo debe ser PDF'
 		//});
@@ -168,6 +189,36 @@ async function gen_pdf() {
 	  return res.status(200).send(req.file);
 	});
 	
+	app.get('/getFileContents', function(request, response) {
+		//var remotePath = request.query.remotePath;
+		var file = request.query.file;
+		console.log(file)
+
+		oc.files.getFile('/dos/'+file, 'public/'+file).then(status => {
+			response.send(status);
+		}).catch(error => {
+			response.send(error);
+		});
+
+		//oc.files.getFileContents('/dos/node-js-upload-file-to-server.pdf').then(content => {
+		//	response.send(content);
+		//}).catch(error => {
+		//	response.send(error);
+		//});
+	});	
+	
+	app.get('/getFile', function(request, response) {
+		var remotePath = request.query.remotePath;
+		var localPath = request.query.localPath;
+
+
+		oc.files.getFile(remotePath, localPath).then(status => {
+			response.send(status);
+		}).catch(error => {
+			response.send(error);
+		});
+	});	
+	
 	app.post("/firma_doc_per", bodyParser.json(), function(req, res){
 		console.log(req.body);
 				
@@ -177,7 +228,7 @@ async function gen_pdf() {
 		Firma_doc.find({_id: clave}).
 		  then(reg_docg => {              
 			console.log(reg_docg); // 'A'
-			
+
 			var reg_doc = reg_docg[0];
             var content = {}
 			
@@ -365,18 +416,17 @@ async function gen_pdf() {
 	};	
 
 	// envio sms por infobit 
-	const f_mail = function(mensaje,mail) {
+	const f_email = function(mensaje,mail) {
 
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
- 		 '"destinatario":["'+mail+'"],'+
+ 		 '"destinatario":['+mail+'],'+
+		 //"copiaOculta":["jairandresdiazp@gmail.com"],
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'	
-         
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  "'+mensaje+'}'	
+             
 		 
-		 console.log(mensaje)
-		 
-		 console.log(dataxx7)
+		 //console.log(dataxx7)
                 
 
                 // llamo funcion de verificacion de vigencia de poliza
