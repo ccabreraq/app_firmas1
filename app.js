@@ -103,11 +103,24 @@ Resource(app, '', 'users', Users).rest();
 
 Resource(app, '', 'firma_doc', Firma_doc).rest({
   afterPost: function(req, res, next) {
-		fs.copyFile('./public/uploads/user1_aa.pdf', './public/uploads/user1_archivo.pdf', (err) => {
-		  if (err) throw err;
-		  console.log('archivo copiado')
-		  //return res.status(200).send({});
-		}); 
+	  
+		//var remotePath = request.query.remotePath;
+		//var localPath = request.query.localPath;
+		//var keepMTime = request.query.keepMTime;
+		var file = req.body.nombre
+
+
+		oc.files.putFile('/dos/uploads/'+file+'.pdf', './public/uploads/user1_aa.pdf').then(status => {
+			response.send(status);
+		}).catch(error => {
+			response.send(error);
+		});	  
+		  
+		//fs.copyFile('./public/uploads/user1_aa.pdf', './public/uploads/user1_archivo.pdf', (err) => {
+		//  if (err) throw err;
+		//  console.log('archivo copiado')
+		//  //return res.status(200).send({});
+		//}); 
         next()		
 	  }
 });	
@@ -193,12 +206,17 @@ async function gen_pdf() {
 		//var remotePath = request.query.remotePath;
 		var file = request.query.file;
 		console.log(file)
+		
+		if (file !== 'uploads/user1_aa.pdf') {
 
-		oc.files.getFile('/dos/'+file, 'public/'+file).then(status => {
-			response.send(status);
-		}).catch(error => {
-			response.send(error);
-		});
+			oc.files.getFile('/dos/'+file, 'public/'+file).then(status => {
+				response.send(status);
+			}).catch(error => {
+				response.send(error);
+			});
+		} else {
+			response.send(true);
+		}
 
 		//oc.files.getFileContents('/dos/node-js-upload-file-to-server.pdf').then(content => {
 		//	response.send(content);
