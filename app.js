@@ -334,16 +334,16 @@ async function gen_pdf() {
 			var rect = reg_doc.rect;
 			var y;
 			for (y of rect) {
-					  cambia_rect(y, clave);;
+					  cambia_rect1(y, clave);;
 			}
 			
-			  async function cambia_rect(reg, clave) {						  
+			  async function cambia_rect1(reg, clave) {						  
 				  if (vuuid == reg.uuid) {
-					 vsatus = reg.status  
+					 vstatus = reg.status  
 				  }
 			  }
 			  
-			if ( vsatus == "firmado") {
+			if ( vstatus == "firmado") {
 				res.status(200).send("OK");
 				
 			} else {
