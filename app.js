@@ -342,7 +342,7 @@ async function gen_pdf() {
 					 vstatus = reg.status  
 				  }
 			  }
-			  
+			  console.log(vstatus)
 			if ( vstatus == "firmado") {
 				res.status(200).send("OK");
 				
