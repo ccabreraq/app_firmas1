@@ -343,7 +343,7 @@ async function gen_pdf() {
 				  }
 			  }
 			  console.log(vstatus)
-			if ( vstatus == "firmado") {
+			if ( vstatus === "firmado") {
 				res.status(200).send("OK");
 				
 			} else {
