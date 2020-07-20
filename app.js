@@ -316,6 +316,45 @@ async function gen_pdf() {
 		//res.status(200).send();
 	})
 
+	app.post("/verifica_firma_per", bodyParser.json(), function(req, res){
+		console.log(req.body);
+				
+		var clave = req.body._id;
+		var vuuid = req.body.uuid;
+		var  vstatus = "";
+		
+		Firma_doc.find({_id: clave}).
+		  then(reg_docg => {              
+			console.log(reg_docg); // 'A'
+
+			var reg_doc = reg_docg[0];
+            var content = {}
+			
+			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
+			var rect = reg_doc.rect;
+			var y;
+			for (y of rect) {
+					  cambia_rect(y, clave);;
+			}
+			
+			  async function cambia_rect(reg, clave) {						  
+				  if (vuuid == reg.uuid) {
+					 vsatus = reg.status  
+				  }
+			  }
+			  
+			if ( vsatus == "firmado") {
+				res.status(200).send("OK");
+				
+			} else {
+			
+				res.status(200).send("NO");			
+			}
+		  })				
+		
+		
+		//res.status(200).send();
+	})
 	
 	
 	app.post("/inicia_firmas", bodyParser.json(), function(req, res){
