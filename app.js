@@ -242,78 +242,96 @@ async function gen_pdf() {
 				
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
-		
-    	//async function envia3() {
-		//  // se envia sms y se verifica  cedula
-		//  var verifica_otp = await f_verifica_otp(vuuid,"57"+cel);
-		//  console.log(env_otp)
-		
+		var vdatos = req.body.datos;
 		
 		Firma_doc.find({_id: clave}).
 		  then(reg_docg => {              
 			console.log(reg_docg); // 'A'
 
 			var reg_doc = reg_docg[0];
-            var content = {}
-			
-			// recooro vetor de personas buscando el que debe cambia
-			var firmantes = reg_doc.firmantes
-			var x;
-			var cant_firmantes = 0
-
-			for (x of firmantes) {
-					  cambia_firmantes(x, clave);;
-			}
-
-			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
-			var rect = reg_doc.rect;
+            var content = {};
+			var cel = "";
+			var cedula = "";
 			var y;
 			for (y of rect) {
-					  cambia_rect(y, clave);;
+				  if (vuuid == y.uuid) {
+					 vstatus = reg.status  
+					 cel = y.content.celular
+					 cedula = y.content.cedula					 
+				  }
 			}
 			
-			  async function cambia_firmantes(reg, clave) {						  
-				  if (vuuid == reg.annotation) {
-					 reg.content.status = 'firmado' 
-					 reg.content.fecha = new Date();
-					 content = reg.content
-				  }
-				  if (reg.content.status == 'firmado') {
-					 cant_firmantes = cant_firmantes + 1; 
-				  }
-		  
-			  }
-
-			  async function cambia_rect(reg, clave) {						  
-				  if (vuuid == reg.uuid) {
-					 reg.status = 'firmado' 
-					 reg.content = content;
-				  }
-			  }
+			async function envia3() {
+			  // se envia sms y se verifica  cedula
+			  var verifica_otp = await f_verifica_otp(vuuid,vdatos.ping);
+			  console.log(verifica_otp)
 			  
-			// reviso si ya se firmaron todos los personas y si es asi cambio el status del registro,
-			var vstatus = reg_doc.status
-			if ( reg_doc.num_firmantes == cant_firmantes ) {
-				vstatus = "finalizado"
-			}
-			// tengo que cambiar el total de firmas ya realizadas
-			reg_camb = {status: vstatus, rect: reg_doc.rect, firmantes: reg_doc.firmantes, num_firmados: cant_firmantes}
-			
-			Firma_doc.updateOne(
-			  {_id: clave},
-			  //{status: "en firmas",firmantes[0].content.status: "enviado"}
-			  //{status: "en firmas"}
-			  reg_camb
-			).then((rawResponse) => {
-				console.log(rawResponse)
-				res.status(200).send(rawResponse);
+			if (cedula == vdatos.cedula && true) {  
 
-			})
-			.catch((err) => {
-			  // manejar error
-			  res.status(500).send(err);
-			});		
 			
+				// recooro vetor de personas buscando el que debe cambia
+				var firmantes = reg_doc.firmantes
+				var x;
+				var cant_firmantes = 0
+
+				for (x of firmantes) {
+						  cambia_firmantes(x, clave);;
+				}
+
+				// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
+				var rect = reg_doc.rect;
+				//var y;
+				for (y of rect) {
+						  cambia_rect(y, clave);;
+				}
+				
+				  async function cambia_firmantes(reg, clave) {						  
+					  if (vuuid == reg.annotation) {
+						 reg.content.status = 'firmado' 
+						 reg.content.fecha = new Date();
+						 content = reg.content
+					  }
+					  if (reg.content.status == 'firmado') {
+						 cant_firmantes = cant_firmantes + 1; 
+					  }
+			  
+				  }
+
+				  async function cambia_rect(reg, clave) {						  
+					  if (vuuid == reg.uuid) {
+						 reg.status = 'firmado' 
+						 reg.content = content;
+					  }
+				  }
+				  
+				// reviso si ya se firmaron todos los personas y si es asi cambio el status del registro,
+				var vstatus = reg_doc.status
+				if ( reg_doc.num_firmantes == cant_firmantes ) {
+					vstatus = "finalizado"
+				}
+				// tengo que cambiar el total de firmas ya realizadas
+				reg_camb = {status: vstatus, rect: reg_doc.rect, firmantes: reg_doc.firmantes, num_firmados: cant_firmantes}
+				
+				Firma_doc.updateOne(
+				  {_id: clave},
+				  //{status: "en firmas",firmantes[0].content.status: "enviado"}
+				  //{status: "en firmas"}
+				  reg_camb
+				).then((rawResponse) => {
+					console.log(rawResponse)
+					res.status(200).send(rawResponse);
+
+				})
+				.catch((err) => {
+				  // manejar error
+				  res.status(500).send(err);
+				});		
+			
+			} else {
+				  res.status(200).send("err");
+				
+			}
+			}
 			
 		  })				
 		// cambia status a "en firmas"
@@ -329,14 +347,13 @@ async function gen_pdf() {
 		var vuuid = req.body.uuid;
 		var  vstatus = "";
 		var cel = ""
-		var reg_doc = req.body.registro
 		
 		
-		//Firma_doc.find({_id: clave}).
-		//  then(reg_docg => {              
-		//	console.log(reg_docg); // 'A'
+		Firma_doc.find({_id: clave}).
+		  then(reg_docg => {              
+			console.log(reg_docg); // 'A'
 
-		//	var reg_doc = reg_docg[0];
+			var reg_doc = reg_docg[0];
             var content = {}
 			
 			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
@@ -368,7 +385,7 @@ async function gen_pdf() {
 			
 				res.status(200).send("NO");			
 			}
-		//  })				
+		  })				
 		
 		
 		//res.status(200).send();
