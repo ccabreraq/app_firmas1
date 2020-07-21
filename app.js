@@ -254,9 +254,10 @@ async function gen_pdf() {
 			var cedula = "";
 			var y;
 			var rect = reg_doc.rect;
+			var firmantes = reg_doc.firmantes
 
-			for (y of rect) {
-				  if (vuuid == y.uuid) {
+			for (y of firmantes) {
+				  if (vuuid == y.annotation) {
 					 //vstatus = rect.status  
 					 cel = y.content.celular
 					 cedula = y.content.cedula					 
@@ -268,11 +269,10 @@ async function gen_pdf() {
 			  var verifica_otp = await f_verifica_otp(vuuid,vdatos.ping);
 			  console.log(verifica_otp)
 			  
-			if (cedula == vdatos.cedula && true) {  
+			if (cedula == vdatos.cedula && verifica_otp.esExitoso) {  
 
 			
 				// recooro vetor de personas buscando el que debe cambia
-				var firmantes = reg_doc.firmantes
 				var x;
 				var cant_firmantes = 0
 
