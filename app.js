@@ -253,9 +253,9 @@ async function gen_pdf() {
 			var cel = "";
 			var cedula = "";
 			var y;
-			for (y of rect) {
+			for (y of reg_doc) {
 				  if (vuuid == y.uuid) {
-					 vstatus = reg.status  
+					 vstatus = reg_doc.status  
 					 cel = y.content.celular
 					 cedula = y.content.cedula					 
 				  }
