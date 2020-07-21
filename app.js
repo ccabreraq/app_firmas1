@@ -262,7 +262,7 @@ async function gen_pdf() {
 					 cedula = y.content.cedula					 
 				  }
 			}
-			
+			envia3()
 			async function envia3() {
 			  // se envia sms y se verifica  cedula
 			  var verifica_otp = await f_verifica_otp(vuuid,vdatos.ping);
