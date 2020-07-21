@@ -353,6 +353,7 @@ async function gen_pdf() {
 	    	  async function envia2() {
 				  // se envia sms y se verifica  cedula
 				  var env_otp = await f_otp(vuuid,"57"+cel);
+				  console.log(env_otp)
 			  }
 			  envia2();
 			  
