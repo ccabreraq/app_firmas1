@@ -243,10 +243,10 @@ async function gen_pdf() {
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
 		
-    	async function envia3() {
-		  // se envia sms y se verifica  cedula
-		  var verifica_otp = await f_verifica_otp(vuuid,"57"+cel);
-		  console.log(env_otp)
+    	//async function envia3() {
+		//  // se envia sms y se verifica  cedula
+		//  var verifica_otp = await f_verifica_otp(vuuid,"57"+cel);
+		//  console.log(env_otp)
 		
 		
 		Firma_doc.find({_id: clave}).
