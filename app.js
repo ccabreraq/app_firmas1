@@ -243,6 +243,12 @@ async function gen_pdf() {
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
 		
+    	async function envia3() {
+		  // se envia sms y se verifica  cedula
+		  var verifica_otp = await f_verifica_otp(vuuid,"57"+cel);
+		  console.log(env_otp)
+		
+		
 		Firma_doc.find({_id: clave}).
 		  then(reg_docg => {              
 			console.log(reg_docg); // 'A'
@@ -323,12 +329,14 @@ async function gen_pdf() {
 		var vuuid = req.body.uuid;
 		var  vstatus = "";
 		var cel = ""
+		var reg_doc = req.body.registro
 		
-		Firma_doc.find({_id: clave}).
-		  then(reg_docg => {              
-			console.log(reg_docg); // 'A'
+		
+		//Firma_doc.find({_id: clave}).
+		//  then(reg_docg => {              
+		//	console.log(reg_docg); // 'A'
 
-			var reg_doc = reg_docg[0];
+		//	var reg_doc = reg_docg[0];
             var content = {}
 			
 			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
@@ -360,7 +368,7 @@ async function gen_pdf() {
 			
 				res.status(200).send("NO");			
 			}
-		  })				
+		//  })				
 		
 		
 		//res.status(200).send();
@@ -577,7 +585,8 @@ async function gen_pdf() {
                   body: dataxx7,
 				  headers: {
 					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
-                    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiODYwMDAyNDAwIiwidXN1YXJpbyI6IkNDNDIxNzQwNSIsInVzZXJDbGllbnRlIjoiQ0M0MjE3NDA1IiwibnVtZXJvRG9jdW1lbnRvIjoiNDIxNzQwNSIsImNvcnJlbyI6IndpbHNvbnBlZHJhemFAZ21haWwuY29tIiwidGVsZWZvbm8iOiIzMTMyMjI1NzE5IiwidGlwb0RvY3VtZW50byI6IjEiLCJiZWFyZXIiOiJCZWFyZXIgZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SmxiWEJ5WlhOaElqb2lPRFl3TURBeU5EQXdJaXdpZFhOMVlYSnBieUk2SWtORE5ESXhOelF3TlNJc0ltWmxZMmhoSWpvaU1qVXZNRE12TWpBeU1DQTFPalUzT2pFeUlHRXVJRzB1SW4wLkxpcjJkNml6bDN1OVNDRzZfcnJrRDJpcjRWYmxWVW4yVjU1UER5UGF2VURaaUxwNDFyWFhZRUE1ZWNwZzNjRDRxeVpuQzB3QjZLeWk1OHVHQ1JKdFdnIiwiaWRlbnRpZmljYWRvclRyYW5zYWNjaW9uIjoiZTJlNGNiNWU5M2E2NDk4YjhkMjE2ZTU2OWYzMmFkNmMiLCJuYW1lVXNlciI6IldpbHNvbiAgUGVkcmF6YSAifQ.lAaX4IDpKRnxa_DnbhDlDeWOpEQQKORskUf3x1nAfqQ-rb2QXIpAB9PSwWIeUMbhYu3PPRGrUzpTzPAJ9x1rCQ',
+                     //'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+		           'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiODYwMDAyNDAwIiwidXN1YXJpbyI6IkNDNDIxNzQwNSIsInVzZXJDbGllbnRlIjoiQ0M0MjE3NDA1IiwibnVtZXJvRG9jdW1lbnRvIjoiNDIxNzQwNSIsImNvcnJlbyI6IndpbHNvbnBlZHJhemFAZ21haWwuY29tIiwidGVsZWZvbm8iOiIzMTMyMjI1NzE5IiwidGlwb0RvY3VtZW50byI6IjEiLCJiZWFyZXIiOiJCZWFyZXIgZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SmxiWEJ5WlhOaElqb2lPRFl3TURBeU5EQXdJaXdpZFhOMVlYSnBieUk2SWtORE5ESXhOelF3TlNJc0ltWmxZMmhoSWpvaU1qVXZNRE12TWpBeU1DQTFPalUzT2pFeUlHRXVJRzB1SW4wLkxpcjJkNml6bDN1OVNDRzZfcnJrRDJpcjRWYmxWVW4yVjU1UER5UGF2VURaaUxwNDFyWFhZRUE1ZWNwZzNjRDRxeVpuQzB3QjZLeWk1OHVHQ1JKdFdnIiwiaWRlbnRpZmljYWRvclRyYW5zYWNjaW9uIjoiZTJlNGNiNWU5M2E2NDk4YjhkMjE2ZTU2OWYzMmFkNmMiLCJuYW1lVXNlciI6IldpbHNvbiAgUGVkcmF6YSAifQ.lAaX4IDpKRnxa_DnbhDlDeWOpEQQKORskUf3x1nAfqQ-rb2QXIpAB9PSwWIeUMbhYu3PPRGrUzpTzPAJ9x1rCQ',
 					'Content-Type': 'application/json'
 				  }				  
                  };
@@ -615,15 +624,15 @@ async function gen_pdf() {
 //var raw = JSON.stringify({"identificadorTransaccion":"2b66ab4d-0825-447f-926c-9e7500a71486","llave":"1-1015448115","OTP":"115783"});
 		 
 		 
-		 //console.log(dataxx7)
+		 console.log(dataxx7)
                 
 
                 // llamo funcion de verificacion de vigencia de poliza
 
                   if (process.env.NODE_ENV == 'produccion') {
- 					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+ 					  var vurl = 'https://pre-apis-tranfiriendo.azurewebsites.net/otp/api/otp/verificar';
                   }else{
-					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+					  var vurl = 'https://pre-apis-tranfiriendo.azurewebsites.net/otp/api/otp/verificar';
 
                   }
 
@@ -633,7 +642,8 @@ async function gen_pdf() {
                   body: dataxx7,
 				  headers: {
 					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+                    //'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+                    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiODYwMDAyNDAwIiwidXN1YXJpbyI6IkNDNDIxNzQwNSIsInVzZXJDbGllbnRlIjoiQ0M0MjE3NDA1IiwibnVtZXJvRG9jdW1lbnRvIjoiNDIxNzQwNSIsImNvcnJlbyI6IndpbHNvbnBlZHJhemFAZ21haWwuY29tIiwidGVsZWZvbm8iOiIzMTMyMjI1NzE5IiwidGlwb0RvY3VtZW50byI6IjEiLCJiZWFyZXIiOiJCZWFyZXIgZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SmxiWEJ5WlhOaElqb2lPRFl3TURBeU5EQXdJaXdpZFhOMVlYSnBieUk2SWtORE5ESXhOelF3TlNJc0ltWmxZMmhoSWpvaU1qVXZNRE12TWpBeU1DQTFPalUzT2pFeUlHRXVJRzB1SW4wLkxpcjJkNml6bDN1OVNDRzZfcnJrRDJpcjRWYmxWVW4yVjU1UER5UGF2VURaaUxwNDFyWFhZRUE1ZWNwZzNjRDRxeVpuQzB3QjZLeWk1OHVHQ1JKdFdnIiwiaWRlbnRpZmljYWRvclRyYW5zYWNjaW9uIjoiZTJlNGNiNWU5M2E2NDk4YjhkMjE2ZTU2OWYzMmFkNmMiLCJuYW1lVXNlciI6IldpbHNvbiAgUGVkcmF6YSAifQ.lAaX4IDpKRnxa_DnbhDlDeWOpEQQKORskUf3x1nAfqQ-rb2QXIpAB9PSwWIeUMbhYu3PPRGrUzpTzPAJ9x1rCQ',
 					'Content-Type': 'application/json'
 				  }				  
                  };
