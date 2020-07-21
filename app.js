@@ -565,9 +565,9 @@ async function gen_pdf() {
                 // llamo funcion de verificacion de vigencia de poliza
 
                   if (process.env.NODE_ENV == 'produccion') {
- 					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+ 					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/otp/api/otp/generar';
                   }else{
-					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/otp/api/otp/generar';
 
                   }
 
