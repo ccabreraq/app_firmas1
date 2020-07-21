@@ -322,6 +322,7 @@ async function gen_pdf() {
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
 		var  vstatus = "";
+		var cel = ""
 		
 		Firma_doc.find({_id: clave}).
 		  then(reg_docg => {              
@@ -340,6 +341,7 @@ async function gen_pdf() {
 			  async function cambia_rect1(reg, clave) {						  
 				  if (vuuid == reg.uuid) {
 					 vstatus = reg.status  
+					 cel = reg.content.celular
 				  }
 			  }
 			  console.log(vstatus)
@@ -347,6 +349,13 @@ async function gen_pdf() {
 				res.status(200).send("OK");
 				
 			} else {
+				
+	    	  async function envia2() {
+				  // se envia sms y se verifica  cedula
+				  var env_otp = await f_otp(vuuid,"57"+cel);
+			  }
+			  envia2();
+			  
 			
 				res.status(200).send("NO");			
 			}
@@ -533,5 +542,121 @@ async function gen_pdf() {
 
 	};		
 	
+	const f_otp = function(clave,numero) {
+
+              
+		//var dataxx7 ='{ "NumberPlate":"'+ result.Vehicle.NumberPlate+'"}';
+        var dataxx7 = '{"identificadorTransaccion":"xxx",'+
+		 '"plantilla":"OTP simple",'+
+		 '"TTL":320000,'+
+		 '"tipo":"NUMERICO",'+
+		 '"destinatario":"'+numero+'",'+
+		 '"canal":"sms",'+
+		'"llave":"'+clave+'"}'
+		 
+//var raw = JSON.stringify({"llave":"1-1015448115","plantilla":"OTP simple","TTL":320000,"tipo":"NUMERICO","canal":"SMS","destinatario":"573143277989"});
+
+
+		 
+		 //console.log(dataxx7)
+                
+
+                // llamo funcion de verificacion de vigencia de poliza
+
+                  if (process.env.NODE_ENV == 'produccion') {
+ 					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+                  }else{
+					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+
+                  }
+
+
+                var options = { method: 'POST',
+                  url: vurl,
+                  body: dataxx7,
+				  headers: {
+					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+					'Content-Type': 'application/json'
+				  }				  
+                 };
+				 
+				  return new Promise((resolve, reject) => {
+	
+					request(options, (error, response, body) => {
+					  if (response) {
+						  
+						var dato1 = JSON.parse(body); 
+						//console.log(dato1)
+						//var dato1 = JSON.parse(datoxx17);
+						return resolve(dato1);
+						
+					  }
+					  if (error) {
+						return reject(error);
+					  }
+					});  
+							  
+				  }); 
+				 
+				 
+
+	};	
+	
+	const f_verifica_otp = function(clave,numero) {
+
+              
+		//var dataxx7 ='{ "NumberPlate":"'+ result.Vehicle.NumberPlate+'"}';
+        var dataxx7 = '{"identificadorTransaccion":"xxx",'+
+		 '"OTP":"'+numero+'",'+
+		'"llave":"'+clave+'"}'
+		
+//var raw = JSON.stringify({"identificadorTransaccion":"2b66ab4d-0825-447f-926c-9e7500a71486","llave":"1-1015448115","OTP":"115783"});
+		 
+		 
+		 //console.log(dataxx7)
+                
+
+                // llamo funcion de verificacion de vigencia de poliza
+
+                  if (process.env.NODE_ENV == 'produccion') {
+ 					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+                  }else{
+					  var vurl = 'https://pro-apis-mensajeria-transfiriendo.azurewebsites.net/api/otp/generar';
+
+                  }
+
+
+                var options = { method: 'POST',
+                  url: vurl,
+                  body: dataxx7,
+				  headers: {
+					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+					'Content-Type': 'application/json'
+				  }				  
+                 };
+				 
+				  return new Promise((resolve, reject) => {
+	
+					request(options, (error, response, body) => {
+					  if (response) {
+						  
+						var dato1 = JSON.parse(body); 
+						//console.log(dato1)
+						//var dato1 = JSON.parse(datoxx17);
+						return resolve(dato1);
+						
+					  }
+					  if (error) {
+						return reject(error);
+					  }
+					});  
+							  
+				  }); 
+				 
+				 
+
+	};	
 
 module.exports = app;
