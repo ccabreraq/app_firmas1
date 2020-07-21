@@ -253,9 +253,11 @@ async function gen_pdf() {
 			var cel = "";
 			var cedula = "";
 			var y;
-			for (y of reg_doc) {
+			var rect = reg_doc.rect;
+
+			for (y of reg) {
 				  if (vuuid == y.uuid) {
-					 vstatus = reg_doc.status  
+					 vstatus = reg.status  
 					 cel = y.content.celular
 					 cedula = y.content.cedula					 
 				  }
@@ -279,7 +281,6 @@ async function gen_pdf() {
 				}
 
 				// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
-				var rect = reg_doc.rect;
 				//var y;
 				for (y of rect) {
 						  cambia_rect(y, clave);;
