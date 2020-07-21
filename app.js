@@ -359,17 +359,30 @@ async function gen_pdf() {
 			
 			// recorro vector de rect buscando el que debo cambiar, lo cambio y dejo el vector listo para rememplazar
 			var rect = reg_doc.rect;
+			
+			var firmantes = reg_doc.firmantes
 			var y;
-			for (y of rect) {
-					  cambia_rect1(y, clave);;
+
+			for (y of firmantes) {
+				  if (vuuid == y.annotation) {
+					 vstatus =y.content.status  
+					 cel = y.content.celular
+					 cedula = y.content.cedula					 
+				  }
 			}
 			
-			  async function cambia_rect1(reg, clave) {						  
-				  if (vuuid == reg.uuid) {
-					 vstatus = reg.status  
-					 cel = reg.content.celular
-				  }
-			  }
+			
+			//for (y of rect) {
+			//		  cambia_rect1(y, clave);;
+			//}
+			//
+			//  async function cambia_rect1(reg, clave) {						  
+			//	  if (vuuid == reg.uuid) {
+			//		 vstatus = reg.status  
+			//		 cel = reg.content.celular
+			//	  }
+			//  }
+			
 			  console.log(vstatus)
 			if ( vstatus === "firmado") {
 				res.status(200).send("OK");
