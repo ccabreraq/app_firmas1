@@ -239,7 +239,7 @@ async function gen_pdf() {
 	
 	app.post("/firma_doc_per", bodyParser.json(), function(req, res){
 		console.log(req.body);
-				
+						
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
 		var vdatos = req.body.datos;
