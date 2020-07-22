@@ -289,7 +289,7 @@ async function gen_pdf() {
 				  async function cambia_firmantes(reg, clave) {						  
 					  if (vuuid == reg.annotation) {
 						 reg.content.status = 'firmado' 
-						 reg.content.fecha = Date(); 
+						 reg.content.fecha = new Date(); 
 						 content = reg.content
 					  }
 					  if (reg.content.status == 'firmado') {
