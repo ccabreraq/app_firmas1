@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose
 
 const DocSchema = new Schema({
+  usuario: String,	
   nombre: String,
   descripcion:  String ,
   otro: String,

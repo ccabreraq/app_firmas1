@@ -18,7 +18,7 @@
       font-family: sans-serif;
       margin: 0;
     }
-	.toolbar {
+	.toolbarxx {
       background-color:#b9d2ec;
       font-family: sans-serif;
 	
@@ -48,7 +48,7 @@
 
     #content-wrapper {
       position: absolute;
-      top: 35px;
+      top: 55px;
       left: 0;
       right: 330px;
       bottom: 0;
@@ -57,7 +57,7 @@
 
     #comment-wrapper {
       position: absolute;
-      top: 35px;
+      top: 55px;
       right: 0;
       bottom: 0;
       overflow: auto;
@@ -192,21 +192,25 @@
   </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <ul class="navbar-nav">
+  
+    <li class="nav-item">
   <div class="toolbar">
  <!--   <button class="cursor" type="button" title="Activar Cursor"  data-tooltype="cursor"><i class="fa fa-i-cursor" aria-hidden="true"></i></button> -->
-    <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">?</button>
+    <button class="cursor" type="button" title="Cursor" data-tooltype="cursor"><></button>
 
 
     <button class="rectangle" type="button" title="activar Rectangulo de Firma" data-tooltype="area"><i class="fa fa-th" aria-hidden="true"></i></button>
 	
-    <button class="comment" type="button" title="Comment" data-tooltype="point">🗨</button>
+   <!-- <button class="comment" type="button" title="Comment" data-tooltype="point">🗨</button> -->
    <!-- <button class="comment" type="button" title="activar comentario" data-tooltype="point"><i class="fa fa-comments" aria-hidden="true"></i></button>
 
-    <button class="eraser" type="button" title="activar Limpiar" data-tooltype="eraser"><i class="fa fa-eraser" aria-hidden="true"></i></button> -->
-    <button class="eraser" type="button" title="Eraser" data-tooltype="eraser">⌫</button>
+    <button class="eraser" type="button" title="activar Limpiar" data-tooltype="eraser"><i class="fa fa-eraser" aria-hidden="true"></i></button> 
+    <button class="eraser" type="button" title="Eraser" data-tooltype="eraser">⌫</button> -->
     <div class="spacer"></div>
 
-    <a href="javascript://" class="clear" title="Limpiar todas las anotaciones"><i class="fa fa-window-close-o" aria-hidden="true"></i></a>
+    <a href="javascript://" class="clear" title="Limpiar todas los rectangulos de firmas"><i class="fa fa-trash-o " style="font-size:22px;color:#ffffff;text-shadow:2px 2px 4px #000000;" aria-hidden="true"></i></a>
 
     <div class="spacer"></div>
 
@@ -221,13 +225,24 @@
 
     <div class="spacer"></div>
 
-     <div class="spacer"></div>
-    <a href="javascript://" class="subir" title="sube documento del cliente para configurar"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+    <a href="javascript://" class="subir"  title="sube documento  para configurar"><i class="fa fa-file-pdf-o " style="font-size:22px;color:#ffffff;text-shadow:2px 2px 2px #000000;" aria-hidden="true"></i></a>
+      <div class="spacer"></div>
 
-    <div class="spacer"></div>
-    <a  href="javascript://" class="crear" title="Crea documento para proceso de firmas"><i class="fa fa-file" aria-hidden="true"></i></a>
+    <a  href="javascript://" class="crear"  title="Graba documento para proceso de firmas"><i class="fa fa-file" style="font-size:22px;color:#ffffff;text-shadow:2px 2px 2px #000000;" aria-hidden="true"></i></a>
 
 	</div>
+    </li>
+ </ul>
+
+<!--  <a class="navbar-brand" href="javascript://" id="subir">
+    <i class="fa fa-file-pdf-o " aria-hidden="true"></i>
+  </a>
+  
+  <a class="navbar-brand" href="javascript://" id="crear">
+    <i class="fa fa-file" aria-hidden="true"></i>
+  </a> -->
+  
+</nav>
   <div id="content-wrapper">
   
      <div id="loader" ></div>
@@ -239,7 +254,7 @@
     <div class="comment-list">
 
       <div class="comment-list-container">
-        <div class="comment-list-item">sin comentarios</div>
+        <div class="comment-list-item"></div>
       </div>
       <form class="comment-list-form" style="display:none;">
         <input type="text" placeholder="Agrega comentario"/>
