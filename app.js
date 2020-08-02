@@ -127,7 +127,7 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
 	  }
 });	
 
-async function gen_pdf(file.rect) {
+async function gen_pdf(file,rect) {
 
     var apiKey = 'ak-e1b1d-chnt0-ra0y7-yemfh-ahrdt'; //leave undefined to use a demo key.  get a free key at https://Dashboard.PhantomJsCloud.com
     console.log("qqq")
