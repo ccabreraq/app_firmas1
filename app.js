@@ -425,7 +425,7 @@ async function gen_pdf() {
 			  
 			  console.log(reg)
 		  
-			var mensajesms1 = "mensaje para firma de documento "+"http://localhost:3000/#/Baz/"+clave+"/"+reg.annotation
+			var mensajesms1 = "mensaje para firma de documento "+"https://app-frimas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
 			var env_mail = await f_mail(mensajesms1,reg.content.email);
 			//var env_mail = await f_mail(reg,req.body )
