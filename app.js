@@ -127,7 +127,7 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
 	  }
 });	
 
-async function gen_pdf() {
+async function gen_pdf(file.rect) {
 
     var apiKey = 'ak-e1b1d-chnt0-ra0y7-yemfh-ahrdt'; //leave undefined to use a demo key.  get a free key at https://Dashboard.PhantomJsCloud.com
     console.log("qqq")
@@ -136,7 +136,11 @@ async function gen_pdf() {
 
 			var browser = new phantomJsCloud.BrowserApi(apiKey);
 			
-			   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index4.html?file=user1_archivo.pdf&datos=[{"type":"area","x":38.34586466165413,"y":629.3233082706766,"width":539.0977443609023,"height":64.66165413533838,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"17cce481-bb0e-4fda-a8c5-a4499a376968","page":1,"content":{"cedula":"79299848","nombres":"Carlos ","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":"2020-07-13T02:48:00.781Z"}},{"type":"area","x":41.35338345864662,"y":711.2781954887217,"width":534.5864661654135,"height":65.41353383458659,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"1bb2582e-da01-490a-a384-e97db146a7cf","page":1,"content":{"cedula":"79299847","nombres":"Santiago","apellidos":"Cabrera","celular":"3204903664","email":"ccabrera@transfiriendo.com","status":"firmado","fecha":"2020-07-13T03:20:42.010Z"}}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "Letter",emulateMedia:"print"}} };
+			const file_name = file+'.pdf'
+
+
+			var pageRequest = { url:"https://app-firmas1.herokuapp.com/index2.html?file="+file_name+"&datos="+JSON.stringify(rect)}
+			//   var pageRequest = { url:'https://app-firmas1.herokuapp.com/index4.html?file=user1_archivo.pdf&datos=[{"type":"area","x":38.34586466165413,"y":629.3233082706766,"width":539.0977443609023,"height":64.66165413533838,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"17cce481-bb0e-4fda-a8c5-a4499a376968","page":1,"content":{"cedula":"79299848","nombres":"Carlos ","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":"2020-07-13T02:48:00.781Z"}},{"type":"area","x":41.35338345864662,"y":711.2781954887217,"width":534.5864661654135,"height":65.41353383458659,"backgroundColor":"red","status":"firmado","class":"Annotation","uuid":"1bb2582e-da01-490a-a384-e97db146a7cf","page":1,"content":{"cedula":"79299847","nombres":"Santiago","apellidos":"Cabrera","celular":"3204903664","email":"ccabrera@transfiriendo.com","status":"firmado","fecha":"2020-07-13T03:20:42.010Z"}}]', renderType: "pdf",renderSettings: {pdfOptions: {format: "Letter",emulateMedia:"print"}} };
 
 			   //console.log("about to request page from PhantomJs Cloud.  request =", JSON.stringify(pageRequest, null, "\t"));
 			browser.requestSingle(pageRequest, function (err, userResponse) {
@@ -244,7 +248,7 @@ async function gen_pdf() {
 						
 		var clave = req.body._id;
 		var vuuid = req.body.uuid;
-		var vdatos = req.body.datos;
+		var vdatos = req.body.datos;  // son los datos capturados en el cuadro de la firma del respectivo firmante
 		
 		Firma_doc.find({_id: clave}).
 		  then(reg_docg => {              
@@ -310,6 +314,11 @@ async function gen_pdf() {
 				// reviso si ya se firmaron todos los personas y si es asi cambio el status del registro,
 				var vstatus = reg_doc.status
 				if ( reg_doc.num_firmantes == cant_firmantes ) {
+					// ojo debo generar el pdf final
+					gen_pdf(reg_doc.nombre, reg_doc.rect)  // devo enviar el documento t el registro de firmas
+					// ojo debo firmarlo digitalmente 
+					// evaluar, poner a el documento en cada caja el dia y la hora de la firma digital y qr de verificacion
+					// debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
 					vstatus = "finalizado"
 				}
 				// tengo que cambiar el total de firmas ya realizadas
