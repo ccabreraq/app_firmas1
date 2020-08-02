@@ -166,6 +166,7 @@ async function gen_pdf(file,rect) {
 					});
 					//resolve(userResponse.content.data);
 					console.log(userResponse.content.data)
+					return userResponse.content.data
 
 				}
 			});
@@ -315,10 +316,14 @@ async function gen_pdf(file,rect) {
 				var vstatus = reg_doc.status
 				if ( reg_doc.num_firmantes == cant_firmantes ) {
 					// ojo debo generar el pdf final
-					gen_pdf(reg_doc.nombre, reg_doc.rect)  // devo enviar el documento t el registro de firmas
+					var cont_pdf = await gen_pdf(reg_doc.nombre, reg_doc.rect)  // devo enviar el documento t el registro de firmas
 					// ojo debo firmarlo digitalmente 
 					// evaluar, poner a el documento en cada caja el dia y la hora de la firma digital y qr de verificacion
-					// debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
+					
+					// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
+					var mensajesms1 = "se envia documento final, del proceso de firmas"
+        			var env_mail = await f_mail(mensajesms1,reg.content.email,cont_pdf);
+
 					vstatus = "finalizado"
 				}
 				// tengo que cambiar el total de firmas ya realizadas
@@ -436,7 +441,7 @@ async function gen_pdf(file,rect) {
 		  
 			var mensajesms1 = "mensaje para firma de documento "+"https://app-frimas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
 			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
-			var env_mail = await f_mail(mensajesms1,reg.content.email);
+			var env_mail = await f_mail(mensajesms1,reg.content.email,null);
 			//var env_mail = await f_mail(reg,req.body )
 			console.log(env_sms)
 			console.log(env_mail)
@@ -567,14 +572,23 @@ async function gen_pdf(file,rect) {
 	};	
 
 	// envio sms por infobit 
-	const f_mail = function(mensaje,mail) {
+	const f_mail = function(mensaje,mail,adjunto) {
 
+     if (adjunto !== null) {      
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"PERFIL UNO",'+
  		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'	
-         
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'
+	 } else {
+        var dataxx7 = '{"identificadorTransaccion":"xxx",'+
+		 '"perfil":"PERFIL UNO",'+
+ 		 '"destinatario":["'+mail+'"],'+
+		 '"canal":"EMAIL",'+
+		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"},'+
+		 '"adjuntos":[{"nombre":"documento.pdf","contenido":"{{'+adjunto+'}}"}]}'       
+
+	 }	 
 		 
 		 console.log(mensaje)
 		 
