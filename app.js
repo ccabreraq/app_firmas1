@@ -304,11 +304,11 @@ async function gen_pdf(file,rect,email) {
 						 reg.content.status = 'firmado' 
 						 reg.content.fecha = new Date(); 
 						 content = reg.content
-						 mail = reg.content.email
 					  }
 					  if (reg.content.status == 'firmado') {
 						 cant_firmantes = cant_firmantes + 1; 
 					  }
+						 mail = mail+","+reg.content.email
 			  
 				  }
 
@@ -589,7 +589,7 @@ async function gen_pdf(file,rect,email) {
 		 '"perfil":"PERFIL UNO",'+
  		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"},'+
+		 '"mensaje":{"asunto":"envio de documento final firmado por las partes","cuerpo":": '+mensaje+'"},'+
 		 '"adjuntos":[{"nombre":"documento.pdf","contenido":"{{'+adjunto+'}}"}]}'       
 
 	 }	 
