@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
   <meta charset="utf-8"/>
@@ -13,10 +14,10 @@
       font-family: sans-serif;
       margin: 0;
     }
-    .pdfViewer1xx .canvasWrapper1 {
+    .pdfViewer1 .canvasWrapper1 {
       box-shadow: 0 0 3px #bbb;
     }
-    .pdfViewer1xx .page {
+    .pdfViewer1 .page {
       margin-bottom: 10px;
     }
 
@@ -28,7 +29,7 @@
       bottom: 0;
     }
 
-    #content-wrapperxx {
+    #content-wrapper {
       position: absolute;
       top: 0px;
       left: 0;
@@ -37,30 +38,6 @@
       overflow: auto;
     }
 
-	#loader1 {
-	  position: absolute;
-	  left: 50%;
-	  top: 50%;
-	  z-index: 1;
-	  border: 16px solid #f3f3f3;
-	  border-radius: 50%;
-	  border-top: 16px solid #3498db;
-	  width: 120px;
-	  height: 120px;
-	  -webkit-animation: spin 2s linear infinite; /* Safari */
-	  animation: spin 2s linear infinite;
-	}
-
-	/* Safari */
-	@-webkit-keyframes spin {
-	  0% { -webkit-transform: rotate(0deg); }
-	  100% { -webkit-transform: rotate(360deg); }
-	}
-
-	@keyframes spin {
-	  0% { transform: rotate(0deg); }
-	  100% { transform: rotate(360deg); }
-	}		
 
 
   </style>
@@ -68,7 +45,6 @@
 <body>
 
   <div id="content-wrapper">
-    <div id='loader' ></div> 
     <div id="viewer" class="pdfViewer"></div>
   </div>
 
