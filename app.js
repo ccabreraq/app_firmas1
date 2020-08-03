@@ -165,11 +165,13 @@ async function gen_pdf(file,rect,email) {
 						
 					});
 					//resolve(userResponse.content.data);
-					console.log(userResponse.content.data)
+					//console.log(userResponse.content.data)
 					
 					// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
 					var mensajesms1 = "se envia documento final, del proceso de firmas"
+                     console.log(email)
         			f_mail(mensajesms1,email,userResponse.content.data);
+
 					
 					return userResponse.content.data
 
