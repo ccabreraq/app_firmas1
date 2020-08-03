@@ -287,6 +287,7 @@ async function gen_pdf(file,rect,email) {
 				// recooro vetor de personas buscando el que debe cambia
 				var x;
 				var cant_firmantes = 0
+				var mail = ""
 
 				for (x of firmantes) {
 						  cambia_firmantes(x, clave);;
@@ -303,6 +304,7 @@ async function gen_pdf(file,rect,email) {
 						 reg.content.status = 'firmado' 
 						 reg.content.fecha = new Date(); 
 						 content = reg.content
+						 mail = reg.content.email
 					  }
 					  if (reg.content.status == 'firmado') {
 						 cant_firmantes = cant_firmantes + 1; 
@@ -321,7 +323,7 @@ async function gen_pdf(file,rect,email) {
 				var vstatus = reg_doc.status
 				if ( reg_doc.num_firmantes == cant_firmantes ) {
 					// ojo debo generar el pdf final
-					gen_pdf(reg_doc.nombre, reg_doc.rect,reg.content.emai)  // devo enviar el documento t el registro de firmas
+					gen_pdf(reg_doc.nombre, reg_doc.rect,mail)  // devo enviar el documento t el registro de firmas
 					// ojo debo firmarlo digitalmente 
 					// evaluar, poner a el documento en cada caja el dia y la hora de la firma digital y qr de verificacion
 					
