@@ -598,9 +598,9 @@ async function gen_pdf(file,rect,email) {
 
 	 }	 
 		 
-		 console.log(mensaje)
+		 //console.log(mensaje)
 		 
-		 console.log(dataxx7)
+		 //console.log(dataxx7)
                 
 
                 // llamo funcion de verificacion de vigencia de poliza
@@ -633,7 +633,7 @@ async function gen_pdf(file,rect,email) {
 					  if (response) {
 						  
 						var dato1 = JSON.parse(body); 
-						//console.log(dato1)
+						console.log(dato1)
 						//var dato1 = JSON.parse(datoxx17);
 						return resolve(dato1);
 						
