@@ -740,7 +740,7 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 			  var registro = {usuario: clave, nombre:'prueba2',descripcion:'prueba2 - cedula xx',otro:'',url:'',fecha_creacion:new Date(), rect:req.body.rect ,firmantes:firmantes, status: 'sin iniciar', num_firmantes:firmantes.length , num_firmados:0 , html: ''}
                
                var options = { method: 'POST',
-                  url: "https://app-frimas1-from.herokuapp.com/firma_doc",
+                  url: "https://app-firmas1.herokuapp.com/firma_doc",
 
                   body: JSON.stringify(registro),
 				  headers: {
