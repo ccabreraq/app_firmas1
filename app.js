@@ -13,7 +13,13 @@ var cors = require('cors')
 var phantomJsCloud = require("phantomjscloud");
 var fs = require('fs');
 
+const carbone = require('carbone');
+var convertapi = require('convertapi')('UWYxOg2XOY7eboVI');
+
 const { PDFDocument } = require('pdf-lib');
+var generate = require('generate-schema');
+var bcrypt = require('bcryptjs');
+var salt = bcrypt.genSaltSync(10);
 
 var indexRouter = require('./routes/index');
 //var usersRouter = require('./routes/users');
@@ -52,6 +58,9 @@ mongoose.connect('mongodb://datosg:ccabreraq12@ds029901.mlab.com:29901/datosg');
 const Firma_doc = require('./mongoose/doc-model')
 const Puntos = require('./mongoose/puntos-model')
 const Users = require('./mongoose/user-model')
+const Formatos = require('./mongoose/formato-model')
+const Templates = require('./mongoose/template-model')
+const Cupos = require('./mongoose/cupos-model')
 
 
 
@@ -99,9 +108,17 @@ app.use(cors({
 			}));
 
 
-			
+
 Resource(app, '', 'puntos', Puntos).rest();
-Resource(app, '', 'users', Users).rest();
+Resource(app, '', 'users', Users).rest({
+  before: function(req, res, next) {
+    console.log(req.body)
+	next();
+  }
+});
+Resource(app, '', 'formatos', Formatos).rest();
+Resource(app, '', 'templates', Templates).rest();
+
 
 Resource(app, '', 'firma_doc', Firma_doc).rest({
   afterPost: function(req, res, next) {
@@ -111,11 +128,14 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
 		//var keepMTime = request.query.keepMTime;
 		var file = req.body.nombre
 
-
+        console.log(req.body)
 		oc.files.putFile('/dos/uploads/'+file+'.pdf', './public/uploads/user1_aa.pdf').then(status => {
-			response.send(status);
+			res.status(200).send(err);
+			//response.send(status);
+			
 		}).catch(error => {
-			response.send(error);
+			res.status(500).send(error);
+			//response.send(error);
 		});	  
 		  
 		//fs.copyFile('./public/uploads/user1_aa.pdf', './public/uploads/user1_archivo.pdf', (err) => {
@@ -126,6 +146,9 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
         next()		
 	  }
 });	
+
+Resource(app, '', 'cupos', Cupos).rest();
+
 
 async function gen_pdf(file,rect,email) {
 
@@ -186,6 +209,43 @@ async function gen_pdf(file,rect,email) {
    //return result;   
 	
 };
+
+	app.post('/cambia_pass', function(request, response) {
+
+	var hash = bcrypt.hashSync(request.body.pass1, salt);
+	//var reg = request.body
+	//reg.encryptedPassword = hash;
+	
+		//Users.replaceOne({_id: request.body.id}, reg, 
+		//		  null, function (err, docs) { 
+		//	if (err){ 
+		//		console.log(err) 
+		//	} 
+		//	else{ 
+		//		console.log("Original Doc : ", docs); 
+		//	} 
+		//}); 		
+		//response.send(200);
+		
+		var logica = true;
+		// logica previa
+		if (logica) {
+			Users.updateOne(
+			  {_id: request.body.id},{encryptedPassword: hash}
+			).then((rawResponse) => {
+				console.log(rawResponse)
+				response.status(200).send(rawResponse);
+			})
+			.catch((err) => {
+			  // manejar error
+			  response.status(500).send(err);
+			});		
+		} else {
+		    response.status(400).send("error de logica");	
+		}
+		
+	});	
+
 
 	app.post('/upload', upload.single('file'), (req, res) => {
 	  if (!req.file.mimetype.startsWith('application/*')) {
@@ -430,50 +490,92 @@ async function gen_pdf(file,rect,email) {
 	
 	
 	app.post("/inicia_firmas", bodyParser.json(), function(req, res){
-		console.log(req.body);
-				
+		console.log(req.body);				
 		var clave = req.body._id
 		
-		var firmantes = req.body.firmantes
-		var x;
+		// inicia logica de negocio, aca seria el contro si tiene habilitacion para el servicio
+		var logicaok = false;
+		var tipo = {}
+		var tipos_cupos
+		run_cupos().catch(err => console.log(err));
 
-		for (x of firmantes) {
-		  		  envia1(x);;
-		}
-		
-		// dispara mail o sms de conexion del firmante con el link a el proceso de verificar documento y firmarlo
-		  async function envia1(reg) {
-			  
-			  console.log(reg)
-		  
-			var mensajesms1 = "mensaje para firma de documento "+"https://app-frimas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
-			var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
-			var env_mail = await f_mail(mensajesms1,reg.content.email,"");
-			//var env_mail = await f_mail(reg,req.body )
-			console.log(env_sms)
-			console.log(env_mail)
-		  }
-		
-		
-		// cambia status a "en firmas"
-		
-		Firma_doc.updateOne(
-		  {_id: clave},
-		  //{status: "en firmas",firmantes[0].content.status: "enviado"}
-		  {status: "en firmas"}
-		).then((rawResponse) => {
-		    res.status(200).send(rawResponse);
+		async function run_cupos() {
+			var xreg_cupo = await Cupos.findOne({id_usuario: req.body.usuario}).exec();	    
+			tipos_cupos = xreg_cupo.tipo
+			console.log(xreg_cupo)
+			for (x of tipos_cupos) {
+				console.log(xreg_cupo[x])
 
-		})
-		.catch((err) => {
-		  // manejar error
-		  res.status(500).send(err);
-		});		
+				if (xreg_cupo[x] > 0) {
+                   logicaok = true;
+				   tipo[x] = xreg_cupo[x] -1
+
+				}				
+			}
+
+		
+			if (logicaok) {
+			
+				var firmantes = req.body.firmantes
+				var x;
+
+				for (x of firmantes) {
+						  envia1(x);;
+				}
 				
+				// dispara mail o sms de conexion del firmante con el link a el proceso de verificar documento y firmarlo
+				  async function envia1(reg) {
+					  
+					  console.log("aaaaaaaaaaareg")
+				  
+					var mensajesms1 = "mensaje para firma de documento "+"https://app-frimas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
+					var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
+					var env_mail = await f_mail(mensajesms1,reg.content.email,"");
+					//var env_mail = await f_mail(reg,req.body )
+					console.log(env_sms)
+					console.log(env_mail)
+				  }
+				
+				
+				// cambia status a "en firmas"
+				
+				Firma_doc.updateOne(
+				  {_id: clave},
+				  //{status: "en firmas",firmantes[0].content.status: "enviado"}
+				  {status: "en firmas"}
+				).then((rawResponse) => {
+					
+					Cupos.updateOne(
+					  {_id: xreg_cupo._id},
+					  //{status: "en firmas",firmantes[0].content.status: "enviado"}
+					  tipo
+					).then((rawResponse) => {
+						
+						
+						
+						res.status(200).send(rawResponse);
 
-    	
-		
-		//res.status(200).send();
+					})
+					.catch((err) => {
+					  // manejar error
+					  res.status(500).send(err);
+					});		
+
+					
+					//res.status(200).send(rawResponse);
+
+				})
+				.catch((err) => {
+				  // manejar error
+				  res.status(500).send(err);
+				});		
+				
+			} else {
+				res.status(400).send("no se perimite la transaccion");
+				
+			}
+		}
+				
 	})
 	
 	app.post("/agrega_pagina", bodyParser.json(), function(req, res){
@@ -515,7 +617,217 @@ async function gen_pdf(file,rect,email) {
 		res.send("GET res sent from webpack dev server")
 	})
 	
+
+	app.get("/crea_schema1", function(req, res){
+		
+        var Templatex = req.query.template;
+		var Formatox = req.query.formato;
+		Templates.find({nom_template: Templatex}).
+		  then(reg_template => {  
+                var xmodelo = reg_template[0]
+                 //console.log(xmodelo.usuario)
+				var entity = [{
+				  "branchAddr1": "value1",
+				  "branchAddr2": "value2",
+				  "branchState": "value3",
+				  "branchZIP": "value4",
+				  "branchPhone": "value5",
+				  "branchEmail": "value6",
+				  "companyDivision": "value7",
+				  "returnAddr1": "value8",
+				  "returnAddr2": "value9",
+				  "returnState": "value10",
+				  "returnZIP": "value11",
+				  "returnDate": "value12",
+				  "employeeName": "value13",
+				  "positionTitle": "value14",
+				  "includeReportingPerson": "true",
+				  "reportingPersonName": "value15",
+				  "reportingPersonTitle": "value16",
+				  "positionLocation": "value17",
+				  "salary": "value18",
+				  "paymentFrequency": "value19",
+				  "firstPaymentDate": "value20",
+				  "annualLeaveDays": "value21",
+				  "weeklyHours": "value22",
+				  "probationNoticePeriod": "value23",
+				  "noticePeriod": "value24",
+				  "includeConf": "true",
+				  "includeOutside": "true",
+				  "includeAfterLeaving": "true",
+				  "restraintPeriod": "value25"
+				}];
+			var schema = generate.json(Templatex+'  -  '+Formatox, entity)
+			res.send ({schema:schema.items})
+		  })
+	})
 	
+	app.post("/crea_template1", bodyParser.json(), function(req, res){
+
+
+	  var clave = req.body._id
+		
+
+		run().catch(err => console.log(err));
+
+		async function run() {
+			var xtemp = await Templates.find({ nom_template: req.body.nom_template}).exec();
+            var xdata = JSON.stringify({"accessKey":"ZDRiNGJlNTUtNzNjYS00ZjY1LThkMWQtODg1ZTA4NzBkZDJkOjc3MTM4MDA","templateName":'ContractTemplate.docx', "outputName":"result.pdf", "data":req.body.datos})
+             //console.log(xtemp)
+			var env_template = await f_template_doc(xdata);
+			console.log(env_template)
+		  // Write the PDF to a file
+		   await fs.writeFileSync('./public/uploads/user1_aa.pdf', await env_template);
+		   res.status(200).send({pdf:env_template});
+		  
+		}	
+	
+	})
+	
+	app.get("/crea_schema", function(req, res){
+		
+        var Templatex = req.query.template;
+		var Formatox = req.query.formato;
+		Templates.find({nom_template: Templatex}).
+		  then(reg_template => {  
+                var xmodelo = reg_template[0]
+                 //console.log(xmodelo.usuario)
+				var entity = [{
+				  "firstname": "value1",
+				  "lastname": "value2"
+				}];
+			var schema = generate.json(Templatex+'  -  '+Formatox, entity)
+			res.send ({schema:schema.items})
+		  })
+	})
+	
+	
+app.post("/crea_template", bodyParser.json(), function(req, res){
+	
+	   //////////////////////////// generacion de docx con variables
+      var data = req.body.datos
+	  var clave = req.body.id
+	  var firmantes = req.body.firmantes
+
+	  carbone.render('./public/prueba1.docx', data, function(err, result){
+		if (err) {
+		  //return console.log(err);
+		  console.log(err)
+		}
+		// write the result
+		fs.writeFileSync('./public/result1.docx', result);
+		
+		//////////////////////// conversor de docx to pdf
+		
+		convertapi.convert('pdf', { File: './public/result1.docx' })
+		  .then(function(result) {
+			// get converted file url
+			console.log("Converted file url: " + result.file.url);
+
+			// save to file
+			return result.file.save('./public/uploads/user1_aa.pdf');
+			//res.status(200).send({pdf:result.file.save('./public/result1.pdf')})
+		  })
+		  .then(function(file) {
+			console.log("File saved: " + file);
+			
+			/////////////////////////////////// crea registro de documento
+			// ojo 
+			//nombre  - tenemos que ponerle un nombre al archivo, una descricion tambien, y otros
+			// url no se cual poner
+			// rect// firmantes
+			// numero de firmantes es la suma de los firmantes
+			  var registro = {usuario: clave, nombre:'prueba2',descripcion:'prueba2 - cedula xx',otro:'',url:'',fecha_creacion:new Date(), rect:req.body.rect ,firmantes:firmantes, status: 'sin iniciar', num_firmantes:firmantes.length , num_firmados:0 , html: ''}
+               
+               var options = { method: 'POST',
+                  url: "http://localhost:8080/firma_doc",
+
+                  body: JSON.stringify(registro),
+				  headers: {
+                    //'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMTU4NzQ4IiwidXN1YXJpbyI6InVzckVudGVySWQiLCJmZWNoYSI6IjMwLzAzLzIwMjAgNTo0NzozMiBwLiBtLiJ9.aecPmVvFLIQzi-d9fBPQ9G5lP4vsW0ooOzbiF35r9mE',
+					'Content-Type': 'application/json'
+				  }				  
+                 };
+	
+	            console.log(options)
+					request(options, (error, response, body) => {
+					  if (response) {
+						  
+						//var dato1 = JSON.parse(body); 
+						//console.log(body)
+						//var dato1 = JSON.parse(datoxx17);
+						
+						//return resolve(body);
+						res.status(200).send({pdf:""})
+						
+					  }
+					  if (error) {
+						//return reject(error);
+						res.status(500).send(error);
+					  }
+					});  
+			
+		  })
+		  .catch(function(e) {
+			console.error(e.toString());
+			res.status(500).send(e);
+		  });	
+		
+		
+
+	  });
+	
+	
+	
+})
+	
+	///////////////////////////////////////////////////// funciones generales /////////////////////////////////////////////////////////	
+	// genera pdf de template y datos enviados
+	const f_template_doc = function(mensaje) {
+
+              
+                // llamo funcion de verificacion de vigencia de poliza
+
+                  if (process.env.NODE_ENV == 'produccion') {
+					  var vurl = 'https://us.dws3.docmosis.com/api/render';
+                  }else{
+					  var vurl = 'https://us.dws3.docmosis.com/api/render';
+
+                  }
+
+
+                var options = { method: 'POST',
+                  url: vurl,
+                  body: mensaje,
+				  headers: {
+					//'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJlbXByZXNhIjoiMTIzNDU2Nzg5IiwidXN1YXJpbyI6Imlkb2N1bWVudG9zdXNlciIsImZlY2hhIjoiMzAvMTAvMjAxOSA0OjM3OjA1IGEuIG0uIn0.ZzLu6G7_r4Snyhk4ev_tBFpSuKBZUO0M4yN__Qrkam3puwnZ2ZqP2zHlATZD29nCH7mWS_K1Cl5FgzPReoA_Zg',
+                    //'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMjg1NDY2IiwidXN1YXJpbyI6InVzcnZlc2VndXJvIiwiZmVjaGEiOiIzMC8wMy8yMDIwIDU6NDc6MzIgcC4gbS4ifQ.VzCWa5I9Clyx6ubf8dpikq2JKa0PvtWMsrcb1FGdhV4',
+                    //'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMTU4NzQ4IiwidXN1YXJpbyI6InVzckVudGVySWQiLCJmZWNoYSI6IjMwLzAzLzIwMjAgNTo0NzozMiBwLiBtLiJ9.aecPmVvFLIQzi-d9fBPQ9G5lP4vsW0ooOzbiF35r9mE',
+					'Content-Type': 'application/json'
+				  }				  
+                 };
+				 console.log(options)
+				  return new Promise((resolve, reject) => {
+	
+					request(options, (error, response, body) => {
+					  if (response) {
+						  
+						//var dato1 = JSON.parse(body); 
+						//console.log(body)
+						//var dato1 = JSON.parse(datoxx17);
+						return resolve(body);
+						
+					  }
+					  if (error) {
+						return reject(error);
+					  }
+					});  
+							  
+				  }); 
+				 
+				 
+
+	};	
 	// envio sms por infobit 
 	const f_sms = function(mensaje,numero) {
 
