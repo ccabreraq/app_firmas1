@@ -758,7 +758,7 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 						//var dato1 = JSON.parse(datoxx17);
 						
 						//return resolve(body);
-						res.status(200).send({pdf:""})
+						res.status(200).send({pdf:body})
 						
 					  }
 					  if (error) {
