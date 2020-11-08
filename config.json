@@ -1,0 +1,4 @@
+{
+    "cliente_url":"https://app-firmas1-from.herokuapp.com/",
+    "mongouri":"mongodb+srv://admin1:ccabreraq1@datosg.orrg1.mongodb.net/datosg?retryWrites=true&w=majority"
+}

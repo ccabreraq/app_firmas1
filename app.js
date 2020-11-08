@@ -32,9 +32,9 @@ var oc = new owncloud(rurl);
 oc.login('Adm_000000000', 'casaauto');
 //var clientx = createClient(rurlwebdav,'Adm_000000000', 'casaauto');
 
+var app = express();
 
-  var app = express();
-
+var config = require('./config.json');
 
 const storage = multer.diskStorage({
     destination:path.join(__dirname,'public/uploads'),
@@ -48,10 +48,33 @@ const storage = multer.diskStorage({
 var upload = multer({ storage: storage })
 var upload1 = multer()
 
+mongoose.connect(config.mongouri)
+//mongoose.connect("mongodb+srv://admin1:admin1@cluster0.1ru7w.mongodb.net/tablas?retryWrites=true&w=majority")
+//mongoose.connect('mongodb://datosg:ccabreraq12@ds029901.mlab.com:29901/datosg');
+//mongoose.connect('mongodb://admin:admin@ds031271.mlab.com:31271/tablas');
 
+// formateadores de carbone
 
-mongoose.connect('mongodb://datosg:ccabreraq12@ds029901.mlab.com:29901/datosg');
-
+  carbone.addFormatters({
+    // this formatter can be used in a template with {d.myBoolean:yesOrNo()}
+    yesOrNo : function (data) { // data = d.myBoolean
+      if (this.lang === 'fr-fr') {
+        return data === true ? 'oui' : 'non';
+      }
+      return data === true ? 'yes' : 'no';
+    },
+	completa : function  (data, largo) {
+	  if (typeof data === 'string') {
+		var unir = "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-."  
+		var n = data.length;
+		var m = largo - n
+		var str2 = unir.substr(0, m);
+		var res = data.concat(str2);
+		return res;
+	  }
+	  return data;
+	}	
+  });
 
 
 // load the database models
@@ -110,9 +133,30 @@ app.use(cors({
 
 
 Resource(app, '', 'puntos', Puntos).rest();
+Resource(app, '', 'cupos', Cupos).rest();
+
 Resource(app, '', 'users', Users).rest({
   before: function(req, res, next) {
     console.log(req.body)
+	next();
+  },
+  afterPost:function(req, res, next) {
+    console.log(req.body)
+	console.log(res.resource.item)
+    var reg = {"id_usuario": res.resource.item._id,
+    "cupo_prepago": 0,
+    "cupo_total": 0,
+    "cupo_prueba": 5,
+    "cupo_postpago": 0,
+    "cupo_mensual": 0,
+    "tipo": [
+        "cupo_prueba"
+    ]}	
+	
+	Cupos.create(reg, function (err, small) {
+	  if (err) return handleError(err);
+	  // saved!
+	});
 	next();
   }
 });
@@ -147,7 +191,13 @@ Resource(app, '', 'firma_doc', Firma_doc).rest({
 	  }
 });	
 
-Resource(app, '', 'cupos', Cupos).rest();
+//const resource4 = Resource(app, '/test', 'resource4', Resource4Model)
+const queris = Resource(app, '/test', 'queris', Firma_doc)
+  .virtual({
+    path: 'totales',
+    before: maxPrice
+  })
+
 
 
 async function gen_pdf(file,rect,email) {
@@ -490,7 +540,10 @@ async function gen_pdf(file,rect,email) {
 	
 	
 	app.post("/inicia_firmas", bodyParser.json(), function(req, res){
-		console.log(req.body);				
+		//console.log(req.body);	
+        console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+		console.log(req.body);	
+		
 		var clave = req.body._id
 		
 		// inicia logica de negocio, aca seria el contro si tiene habilitacion para el servicio
@@ -513,7 +566,8 @@ async function gen_pdf(file,rect,email) {
 				}				
 			}
 
-		
+		     console.log(tipo)
+			 console.log(logicaok)
 			if (logicaok) {
 			
 				var firmantes = req.body.firmantes
@@ -528,7 +582,8 @@ async function gen_pdf(file,rect,email) {
 					  
 					  console.log("aaaaaaaaaaareg")
 				  
-					var mensajesms1 = "mensaje para firma de documento "+"https://app-frimas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
+					//var mensajesms1 = "mensaje para firma de documento "+"https://app-firmas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
+					var mensajesms1 = "mensaje para firma de documento "+config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
 					var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
 					var env_mail = await f_mail(mensajesms1,reg.content.email,"");
 					//var env_mail = await f_mail(reg,req.body )
@@ -688,18 +743,101 @@ async function gen_pdf(file,rect,email) {
 		
         var Templatex = req.query.template;
 		var Formatox = req.query.formato;
+		
+		
 		Templates.find({nom_template: Templatex}).
 		  then(reg_template => {  
                 var xmodelo = reg_template[0]
-                 //console.log(xmodelo.usuario)
-				var entity = [{
-				  "firstname": "value1",
-				  "lastname": "value2"
-				}];
-			var schema = generate.json(Templatex+'  -  '+Formatox, entity)
-			res.send ({schema:schema.items})
-		  })
-	})
+	    carbone.render_datos('./public/prueba1.docx', function(err, result){
+			if (err) {
+			  //return console.log(err);
+			  console.log(err)
+			}
+		
+				var x;
+				var pp = result[0];
+				var cc = []
+				
+ 				
+				var firmantes = {
+				  "type": "array",
+				  "title": "Firmantes",
+				  "items": {
+					"type": "object",
+					"required": [
+					  "nombres"
+					],
+					"properties": {
+					  "cedula": {
+						"type": "string",
+						"title": "Cedula",
+						"description": "Cedula de ciudadania"
+					  },
+					  "nombres": {
+						"type": "string",
+						"title": "Nombres",
+						"description": "nombres del firmante"
+					  },
+					  "apellidos": {
+						"type": "string",
+						"title": "Apellidos",
+						"description": "apellidos del firmante"
+					  },
+					  "celular": {
+						"type": "string",
+						"title": "Celular",
+						"description": "celular del firmante"
+					  },
+					  "email": {
+						"type": "string",
+						"title": "Email",
+						"description": "email del firmante"
+					  }
+					}
+				  }
+				
+				}
+  
+
+				
+				var dd = { "type": "object",  "required": [],  "properties": {firmantes:firmantes}}
+				var campo_buscar
+				function check_existe(campo) {
+				  return campo === campo_busca;
+				}
+
+				for (x of pp) {
+						 
+					 var resp = x.name
+				 if (resp.substr(0, 18) !== "_root.d.firmantes[") {
+					 
+  				     if (resp.substr(0, 8) !== "_root.c.") {
+						 var resp1 = resp.replace("_root.d.","")
+						 //var resp1 = resp1.replace("_root.c.","")
+						  var n = resp1.search(":");
+						  if ( n > 0 ){
+							  var resp2 = resp1.substr(0, n);
+							  campo_busca = resp2
+                              if (dd.required.find(check_existe) === undefined ) {							  
+								  dd.properties[resp2] = {"type": "string","title": resp2}
+								  dd.required.push(resp2);
+							  }
+						  } else {
+							  campo_busca = resp1
+                              if (dd.required.find(check_existe) === undefined) {							  
+								  dd.properties[resp1] = {"type": "string","title": resp1}
+								  dd.required.push(resp1);
+							  }
+						  }
+						  console.log(dd);	
+					 }	
+					 }					 
+				}
+			    res.send ({schema:dd,firmantes:[{},{}]})
+
+		    });
+	    });
+	});
 	
 	
 app.post("/crea_template", bodyParser.json(), function(req, res){
@@ -708,12 +846,57 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
       var data = req.body.datos
 	  var clave = req.body.id
 	  var firmantes = req.body.firmantes
+	  console.log(data)
+	  
+	// inicia logica de negocio, aca seria el contro si tiene habilitacion para el servicio
+	var logicaok = false;
+	var tipo = {}
+	var tipos_cupos
+	run_cupos().catch(err => console.log(err));
 
-	  carbone.render('./public/prueba1.docx', data, function(err, result){
+	async function run_cupos() {
+		var xreg_cupo = await Cupos.findOne({id_usuario: req.body.usuario}).exec();	    
+		tipos_cupos = xreg_cupo.tipo
+		console.log(xreg_cupo)
+		for (x of tipos_cupos) {
+			console.log(xreg_cupo[x])
+
+			if (xreg_cupo[x] > 0) {
+			   logicaok = true;
+			   tipo[x] = xreg_cupo[x] -1
+
+			}				
+		}
+
+		 console.log(tipo)
+		 console.log(logicaok)
+	if (logicaok) {
+		options =	{
+					  //convertTo    : 'pdf',           // String|Object, to convert the document (pdf, xlsx, docx, ods, csv, txt, ...)
+					  //lang         : 'en-us',         // String, output lang of the report
+					  complement   : {propietario:"PEDRO GOMEZ", fecha: new Date()},              // Object|Array, extra data accessible in the template with {c.} instead of {d.}
+					  variableStr  : '{#def = d.id}', // String, predefined alias string, see designer's documentation
+					  //reportName   : '{d.date}.odt',  // String, dynamic file name, output in third argument of the callback
+					  enums        : {                // Object, list of enumerations, use it in reports with `convEnum` formatters
+						'ORDER_STATUS' : ['open', 'close'],
+						'SPEED' : {
+						  10 : 'slow',
+						  20 : 'fast'
+						}
+					  },
+					  //translations : {                // Object, dynamically overwrite all loaded translations for this rendering
+					  //	'fr-fr' : {'one':'un' },
+					  //	'es-es' : {'one':'uno'}
+					  //},
+					  //hardRefresh: false              // If true, the report content is refreshed at the end of the rendering process. To use this option, `convertTo` has to be defined.
+			}
+
+	  carbone.render('./public/prueba1.docx', data, options, function(err, result){
 		if (err) {
 		  //return console.log(err);
 		  console.log(err)
 		}
+		console.log(result)
 		// write the result
 		fs.writeFileSync('./public/result1.docx', result);
 		
@@ -737,10 +920,11 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 			// url no se cual poner
 			// rect// firmantes
 			// numero de firmantes es la suma de los firmantes
+			
 			  var registro = {usuario: clave, nombre:'prueba2',descripcion:'prueba2 - cedula xx',otro:'',url:'',fecha_creacion:new Date(), rect:req.body.rect ,firmantes:firmantes, status: 'sin iniciar', num_firmantes:firmantes.length , num_firmados:0 , html: ''}
                
                var options = { method: 'POST',
-                  url: "https://app-firmas1.herokuapp.com/firma_doc",
+                  url: "http://localhost:8080/firma_doc",
 
                   body: JSON.stringify(registro),
 				  headers: {
@@ -749,17 +933,38 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 				  }				  
                  };
 	
-	            console.log(options)
+	            //console.log(options)
 					request(options, (error, response, body) => {
 					  if (response) {
 						  
-						//var dato1 = JSON.parse(body); 
-						//console.log(body)
-						//var dato1 = JSON.parse(datoxx17);
-						
-						//return resolve(body);
-						res.status(200).send({pdf:body})
-						
+						console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+						console.log(response.body)
+						res.status(200).send({pdf:""})
+
+						var reg1 = response.body
+						//reg1._id = reg1.usuario
+					    var options = { method: 'POST',
+						  url: "http://localhost:8080/inicia_firmas",
+
+						  body: reg1,
+						  headers: {
+							//'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXByZXNhIjoiOTAxMTU4NzQ4IiwidXN1YXJpbyI6InVzckVudGVySWQiLCJmZWNoYSI6IjMwLzAzLzIwMjAgNTo0NzozMiBwLiBtLiJ9.aecPmVvFLIQzi-d9fBPQ9G5lP4vsW0ooOzbiF35r9mE',
+							'Content-Type': 'application/json'
+						  }				  
+						};
+
+						//console.log(options)
+						//	request(options, (error, response1, body) => {
+						//	  if (response1) {
+						//         //console.log(body)
+						//		//return resolve(body);
+						//		res.status(200).send({pdf:""})
+						//	  }
+						//	  if (error) {
+						//		//return reject(error);
+						//		res.status(500).send(error);
+						//	  }
+						//    })
 					  }
 					  if (error) {
 						//return reject(error);
@@ -776,10 +981,69 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 		
 
 	  });
+	  
+	} else {
+		res.status(400).send("no se perimite la transaccion");
+		
+	}
+	  
 	
-	
+	}
 	
 })
+
+app.get("/totales_documentos", function(req, res){
+    var usuariox = req.query.usuario;
+	Firma_doc.aggregate([
+    { $match : {usuario:usuariox } },
+	{ $group: { _id : "$status",count: { $sum: 1}}}
+
+	 ],    function(err, result) {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json(result);
+      }
+
+	})	
+})	
+	
+	
+
+app.get("/totales_documentos1", function(req, res){
+	
+var start = new Date("2020-01-01T00:00:00.000Z");
+var finish = new Date("2020-10-10T00:00:00.000Z");
+
+Firma_doc.aggregate([
+{ $match: { $and: [ { fecha_creacion: { $gt: start, $lt: finish } }
+     ] } },
+    { $project: {
+        "_id":1,
+        "fecha_creacion":"$fecha_creacion",
+        "nombres":"$rect.type"
+        }
+    },
+    { $out: "tempPruebaCarlos"}],    function(err, result) {
+    //{ $out: {  db :  "tablas" ,  coll :  "movi"  }}],    function(err, result) {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json(result);
+      }
+    })
+
+ });
+
+var maxPrice = function(req, res, next) {
+  req.modelQuery = Firma_doc.aggregate(
+    [
+	   { $group: { _id : "$status"},total: {count: { $sum: 5}}},	  
+    ]
+  );
+  return next();
+};
+	
 	
 	///////////////////////////////////////////////////// funciones generales /////////////////////////////////////////////////////////	
 	// genera pdf de template y datos enviados
@@ -893,7 +1157,7 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 
 	// envio sms por infobit 
 	const f_mail = function(mensaje,mail,adjunto) {
-
+	
      if (adjunto === "") {      
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"enter-id",'+
