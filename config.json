@@ -1,4 +1,4 @@
 {
-    "cliente_url":"https://app-firmas1-from.herokuapp.com/",
+    "cliente_url":"http://pre.nodeapps.transfiriendo.com:8087/",
     "mongouri":"mongodb+srv://admin1:ccabreraq1@datosg.orrg1.mongodb.net/datosg?retryWrites=true&w=majority"
 }
