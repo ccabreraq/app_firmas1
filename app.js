@@ -48,7 +48,7 @@ const storage = multer.diskStorage({
 var upload = multer({ storage: storage })
 var upload1 = multer()
 
-mongoose.connect(config.mongouri)
+mongoose.connect(config.mongouri,{ useNewUrlParser: true, useUnifiedTopology: true })
 //mongoose.connect("mongodb+srv://admin1:admin1@cluster0.1ru7w.mongodb.net/tablas?retryWrites=true&w=majority")
 //mongoose.connect('mongodb://datosg:ccabreraq12@ds029901.mlab.com:29901/datosg');
 //mongoose.connect('mongodb://admin:admin@ds031271.mlab.com:31271/tablas');
@@ -135,8 +135,7 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Expose-Headers", "X-Total-Count, Content-Range");
     next();
-});			
-
+});
 
 Resource(app, '', 'puntos', Puntos).rest();
 Resource(app, '', 'cupos', Cupos).rest();
@@ -589,7 +588,7 @@ async function gen_pdf(file,rect,email) {
 					  console.log("aaaaaaaaaaareg")
 				  
 					//var mensajesms1 = "mensaje para firma de documento "+"https://app-firmas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
-					var mensajesms1 = "mensaje para firma de documento "+config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
+					var mensajesms1 = ""+config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
 					var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
 					var env_mail = await f_mail(mensajesms1,reg.content.email,"");
 					//var env_mail = await f_mail(reg,req.body )
@@ -1163,13 +1162,28 @@ var maxPrice = function(req, res, next) {
 
 	// envio sms por infobit 
 	const f_mail = function(mensaje,mail,adjunto) {
+		
+		
+    //var acs = '<h1>FirmaFacil</h1><p>This is a paragraph.</p><p>Edit the code in the window to the left, and click to view the result.</p>'
+    var acs = '<h1 style="text-align: center;">FirmaFacil</h1><p></p><p>Te han incluido entre los firmantes de un documento digital, por favor ingresa a es link para que puedas revisar y firmar el documento:</p><p><a href="http://pre.nodeapps.transfiriendo.com:8087/#/Baz/5fc11cabd0dd240017360207/9765efba-9925-4482-9c35-8045ec1d144c">&nbsp;------- ACCESO AL DOCUMENTO----------</a></p><div class="a3s aiL ">Muchas Gracia.</div>'	
+    var htmlx = "<HTML>\r\n<p>Estimado(a) "+"aaa"+",</p>\r\n"+
+             "<p>Ya tenemos listo su SOAT, nuestra Ã¡rea de servicio a DOMICILIO  en breve lo contactara para verificar datos y programar la entrega.</p>"+
+             "<p></p>"+
+             "<p>Una vez verificados los datos el tiempo de entrega en la Ciudad de Cali es aproximadamente en 3 (tres)  hrs</p>"+
+             "<p></p>"+
+             "<p>Si tiene alguna pregunta no dude en comunicarse con nosotros. Recuerde que en PENTAINNOVA estamos para servirle. Cordialmente, </p>"+
+             "<p>Domicilios - Pentainnova</p>"+
+             "<p>Cel: 3004568738, Email: lcabrera@pentainnova.com</p>"+
+             "\r\n</HTML>\r\n"
+	
 	
      if (adjunto === "") {      
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"enter-id",'+
  		 '"destinatario":["'+mail+'"],'+
 		 '"canal":"EMAIL",'+
-		 '"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"por favor entrar a este enlace:  '+mensaje+'"}}'
+		 '"mensaje":{"asunto":"notificacion de firma de documento","cuerpo":"FirmaFacil, le ha enviado un documento para su revision y firma, por favor entrar a este enlace:  '+mensaje+'"}}'
+		 //'"mensaje":{"asunto":"notificacion para firma de documento","cuerpo":"'+acs+'"}}'
 	 } else {
         var dataxx7 = '{"identificadorTransaccion":"xxx",'+
 		 '"perfil":"enter-id",'+
