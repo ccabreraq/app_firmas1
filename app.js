@@ -142,12 +142,12 @@ Resource(app, '', 'cupos', Cupos).rest();
 
 Resource(app, '', 'users', Users).rest({
   before: function(req, res, next) {
-    console.log(req.body)
+    //console.log(req.body)
 	next();
   },
   afterPost:function(req, res, next) {
-    console.log(req.body)
-	console.log(res.resource.item)
+    //console.log(res.resource)
+	//console.log(res.resource.item)
     var reg = {"id_usuario": res.resource.item._id,
     "cupo_prepago": 0,
     "cupo_total": 0,
@@ -162,6 +162,7 @@ Resource(app, '', 'users', Users).rest({
 	  if (err) return handleError(err);
 	  // saved!
 	});
+	
 	next();
   }
 });
@@ -203,7 +204,45 @@ const queris = Resource(app, '/test', 'queris', Firma_doc)
     before: maxPrice
   })
 
+const urlxx = "https://docamatic.com/api/v1/pdf";
+const token = 'DmnWbO6to3LGmmOhMKs1TxEGtixn5loOOaGfmEzp';
 
+async function gen_pdfxx(file,rect,email) {
+     
+	const file_name = file+'.pdf' 
+	 
+    const optionsx1 = {
+		url: urlxx,
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            source: "https://app-firmas1.herokuapp.com/index4.html?file="+file_name+"&datos="+JSON.stringify(rect),
+            format: "Letter",
+            media: "print",
+        })
+		};
+		
+					request(optionsx1, (error, response, body) => {
+					  if (response) {
+						  
+						var dato1 = JSON.parse(body); 
+						console.log(dato1)
+						//var dato1 = JSON.parse(datoxx17);
+						return dato1;
+						
+					  }
+					  if (error) {
+						 console.log(error) 
+						 return ""
+					  }
+					})
+
+};
+
+  
 
 async function gen_pdf(file,rect,email) {
 
@@ -995,6 +1034,63 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 	
 	}
 	
+})
+app.get("/verifica_user", function(req, res){
+    var celularx = req.query.usuario;
+	var xxusuario,szx
+	
+		run().catch(err => res.send(err));
+
+		async function run() {
+			var usuario = await Users.find({ cedula: celularx}).exec();
+			
+			if (usuario.length == 0) {
+				xxusuario = 'sss'
+				szx = xxusuario.toString()
+				res.status(401).send([]);
+			} else {
+				 xxusuario = usuario[0]._id
+				 szx = xxusuario.toString()			
+			
+				var q = Firma_doc.find({usuario: xxusuario}).sort({'fecha_creacion': -1}).limit(5);
+				var registx = await q.exec();
+				
+				//var fetch(API_URL+'/firma_doc?limit=5&skip=0&sort=-fecha_creacion&usuario='+authProvider.getUser());
+			   //res.status(200).send({pdf:env_template});
+				var xx = await Firma_doc.aggregate([{ $match : {usuario: szx } },{ $group: { _id : "$status",count: { $sum: 1}}}]).exec()
+				var result = {usuario:usuario,registros:registx,totales:xx}
+			   res.status(200).send(result);
+			}
+		   
+		}	
+		
+	
+})
+
+app.get("/verifica_cupos", function(req, res){
+    var pusuario = req.query.usuario;
+	var usuario = mongoose.Types.ObjectId(pusuario)
+	var xusuario,szx
+	
+		run().catch(err => res.send(err));
+
+		async function run() {
+			var xusuario = await Users.find({ _id: usuario}).exec();
+			
+			if (xusuario.length == 0) {
+				res.status(401).send([]);
+			} else {
+				var q = await Cupos.find({ id_usuario: usuario}).exec();
+				
+				var q1 = Firma_doc.find({usuario: pusuario}).sort({'fecha_creacion': -1}).limit(5);
+				var registx = await q1.exec();
+							
+				var xx = await Firma_doc.aggregate([{ $match : {usuario: pusuario } },{ $group: { _id : "$status",count: { $sum: 1}}}]).exec()
+				var result = {usuario:xusuario[0],cupos:q[0],registros:registx,totales:xx}
+			   res.status(200).send(result);
+			}
+		   
+		}	
 })
 
 app.get("/totales_documentos", function(req, res){
