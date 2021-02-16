@@ -32,6 +32,9 @@ var oc = new owncloud(rurl);
 oc.login('Adm_000000000', 'casaauto');
 //var clientx = createClient(rurlwebdav,'Adm_000000000', 'casaauto');
 
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
+
 var app = express();
 
 var config = require('./config.json');
@@ -204,45 +207,6 @@ const queris = Resource(app, '/test', 'queris', Firma_doc)
     before: maxPrice
   })
 
-const urlxx = "https://docamatic.com/api/v1/pdf";
-const token = 'DmnWbO6to3LGmmOhMKs1TxEGtixn5loOOaGfmEzp';
-
-async function gen_pdfxx(file,rect,email) {
-     
-	const file_name = file+'.pdf' 
-	 
-    const optionsx1 = {
-		url: urlxx,
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            source: "https://app-firmas1.herokuapp.com/index4.html?file="+file_name+"&datos="+JSON.stringify(rect),
-            format: "Letter",
-            media: "print",
-        })
-		};
-		
-					request(optionsx1, (error, response, body) => {
-					  if (response) {
-						  
-						var dato1 = JSON.parse(body); 
-						console.log(dato1)
-						//var dato1 = JSON.parse(datoxx17);
-						return dato1;
-						
-					  }
-					  if (error) {
-						 console.log(error) 
-						 return ""
-					  }
-					})
-
-};
-
-  
 
 async function gen_pdf(file,rect,email) {
 
@@ -287,7 +251,8 @@ async function gen_pdf(file,rect,email) {
 					// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
 					var mensajesms1 = "se envia documento final, del proceso de firmas"
                      console.log(email)
-        			f_mail(mensajesms1,email,userResponse.content.data);
+        			//f_mail(mensajesms1,email,userResponse.content.data);
+					f_mail_sedngrid(mensajesms1,email,{},{},"d-b16f6f624b8b4b1697767f2875d32ced",userResponse.content.data);
 
 					
 					return userResponse.content.data
@@ -480,7 +445,12 @@ async function gen_pdf(file,rect,email) {
 				var vstatus = reg_doc.status
 				if ( reg_doc.num_firmantes == cant_firmantes ) {
 					// ojo debo generar el pdf final
-					gen_pdf(reg_doc.nombre, reg_doc.rect,mail)  // devo enviar el documento t el registro de firmas
+					
+					//gen_pdf(reg_doc.nombre, reg_doc.rect,mail)  // devo enviar el documento t el registro de firmas
+					
+					f_crea_final(reg_doc.nombre,reg_doc) 
+					
+					
 					// ojo debo firmarlo digitalmente 
 					// evaluar, poner a el documento en cada caja el dia y la hora de la firma digital y qr de verificacion
 					
@@ -627,9 +597,12 @@ async function gen_pdf(file,rect,email) {
 					  console.log("aaaaaaaaaaareg")
 				  
 					//var mensajesms1 = "mensaje para firma de documento "+"https://app-firmas1-from.herokuapp.com/#/Baz/"+clave+"/"+reg.annotation
-					var mensajesms1 = ""+config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
+					//var mensajesms1 = ""+config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
+					var mensajesms1 = config.cliente_url+"#/Baz/"+clave+"/"+reg.annotation
 					var env_sms = await f_sms(mensajesms1,"57"+reg.content.celular);
-					var env_mail = await f_mail(mensajesms1,reg.content.email,"");
+					//var env_mail = await f_mail(mensajesms1,reg.content.email,"");
+					var env_mail = await f_mail_sedngrid(mensajesms1,reg.content.email,reg.content,req.body,"d-a3cf9047d9394c04bdb8154b8a69d15a","");
+					
 					//var env_mail = await f_mail(reg,req.body )
 					console.log(env_sms)
 					console.log(env_mail)
@@ -1255,6 +1228,45 @@ var maxPrice = function(req, res, next) {
 				 
 
 	};	
+	const  f_mail_sedngrid = function (mensaje,mail,firmante,datos,template,adjunto) {
+		console.log(mail)
+		console.log(firmante)		
+		console.log(datos)
+		console.log(mensaje)
+		
+     if (adjunto === "") {      
+		var msg = {
+			  to: mail,
+			  from: 'notificacion@tucarpeta.in', // Use the email address or domain you verified above
+			  template_id: template,
+			  dynamic_template_data: {conexion:mensaje,cliente:"Carlos Cabrera",nombre:datos.nombre,descripcion:datos.descripcion,fecha:datos.fecha_creacion,firmante:firmante.nombres+' '+firmante.apellidos},
+			  //text: 'and easy to do anywhere, even with Node.js',
+			  //html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+			};
+	 } else {
+		var msg = {
+			  to: mail,
+			  from: 'notificacion@tucarpeta.in', // Use the email address or domain you verified above
+			  template_id: template,
+			  dynamic_template_data: datos,
+			  //text: 'and easy to do anywhere, even with Node.js',
+			  //html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+              attachments: [{content:Buffer.from(adjunto).toString('base64') ,filename:"documento.pdf"}]
+			};
+		 
+	 }
+			
+		sgMail
+		  .send(msg)
+		  .then(() => {}, error => {
+			console.error(error);
+
+			if (error.response) {
+			  console.error(error.response.body)
+			}
+		  });
+	};
+	
 
 	// envio sms por infobit 
 	const f_mail = function(mensaje,mail,adjunto) {
@@ -1459,5 +1471,120 @@ var maxPrice = function(req, res, next) {
 				 
 
 	};	
+	
+	const f_crea_final = function(file, doc) {
+		
+         //doc = {"_id":{"$oid":"6029bcfa7fa7db38680b5591"},"rect":[{"type":"area","x":69.33333333333333,"y":425.3333333333333,"width":252.66666666666669,"height":69.33333333333337,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"ecee3f73-3320-4b1c-a500-48ab36234adc","page":7},{"type":"area","x":340.6666666666667,"y":425.3333333333333,"width":231.33333333333331,"height":73.33333333333337,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","page":7}],"firmantes":[{"class":"Comment","uuid":"3f9f8dbe-fba6-4103-80b3-f0529988fbb6","annotation":"ecee3f73-3320-4b1c-a500-48ab36234adc","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}},{"class":"Comment","uuid":"4ccf2410-8d5f-4f00-a57a-3eb725a29f8f","annotation":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"F88888","descripcion":"F888","otro":"","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1613348090122"}},"status":"sin iniciar","num_firmantes":{"$numberInt":"2"},"num_firmados":{"$numberInt":"0"},"__v":{"$numberInt":"0"}}
+
+        //var reg1 = {"_id":{"$oid":"6029bcfa7fa7db38680b5591"},"rect":[{"type":"area","x":69.33333333333333,"y":425.3333333333333,"width":{"$numberDouble":"252.66666666666669"},"height":{"$numberDouble":"69.33333333333337"},"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"ecee3f73-3320-4b1c-a500-48ab36234adc","page":7},{"type":"area","x":340.6666666666667,"y":425.3333333333333,"width":{"$numberDouble":"231.33333333333331"},"height":{"$numberDouble":"73.33333333333337"},"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","page":7}],"firmantes":[{"class":"Comment","uuid":"3f9f8dbe-fba6-4103-80b3-f0529988fbb6","annotation":"ecee3f73-3320-4b1c-a500-48ab36234adc","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}},{"class":"Comment","uuid":"4ccf2410-8d5f-4f00-a57a-3eb725a29f8f","annotation":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"F88888","descripcion":"F888","otro":"","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1613348090122"}},"status":"sin iniciar","num_firmantes":{"$numberInt":"2"},"num_firmados":{"$numberInt":"0"},"__v":{"$numberInt":"0"}}		
+		var reg1 = doc.reg
+		
+		run().catch(err => console.log(err));
+
+		async function run() {
+			
+			//oc.files.getFile('/dos/uploads/'+file+'.pdf', 'public/uploads/'+file+'.pdf').then(status => {
+			//	response.send(status);
+			//}).catch(error => {
+			//	response.send(error);
+			//});
+			
+		  //const xfile = await PDFDocument.load(fs.readFileSync('./public/uploads/'+file+'.pdf'));
+		  const image_firma_no = await PDFDocument.load(fs.readFileSync('./public/uploads/FIRMA_PDF_NO.pdf'));
+		  const image_firma_si = await PDFDocument.load(fs.readFileSync('./public/uploads/FIRMA_PDF_SI.pdf'));
+			
+		  // Load a PDFDocument from the existing PDF bytes
+		  const pdfDoc = await PDFDocument.load(fs.readFileSync('./public/uploads/'+file+'.pdf'));
+
+		  const [firma_no] = await pdfDoc.embedPdf(image_firma_no);
+		  const firma_no_Dims = firma_no.scale(0.45);
+
+		  const [firma_si] = await pdfDoc.embedPdf(image_firma_si);
+		  const firma_si_Dims = firma_si.scale(0.45);
+		  
+		  // Get the first page of the document
+		  const pages = pdfDoc.getPages();
+		  //const firstPage = pages[3];
+		  //const stPage = pages[6];
+
+		  // Get the width and height of the first page
+		  //const { width, height } = firstPage.getSize();
+		  
+				var rect = doc.rect
+				var x;
+				var pagss
+
+				for (x of rect) {
+					 crea_firma(x);;
+				}
+				
+				// dispara mail o sms de conexion del firmante con el link a el proceso de verificar documento y firmarlo
+				  async function crea_firma(reg) {
+					  pagss = pages[reg.page-1];
+					  pagss.drawPage(firma_si, {
+						...firma_si_Dims,
+						x: reg.x - 5,
+						y: 710 - (270 + reg.y)
+					  });
+				  }
+		  
+		  
+          const pdfBytes = await pdfDoc.save();
+
+					fs.writeFile("public/uploads/prueba1.pdf", pdfBytes, {
+
+
+					
+					}, function (err) {
+						console.log("captured page written to " + file);
+                        //resolve("erro");				
+						
+					});
+					
+		         		var fir = doc.firmantes
+						var y;
+						
+						for (y of fir) {
+							 envia_doc_mail(y);;
+						}
+						
+						// dispara mail o sms de conexion del firmante con el link a el proceso de verificar documento y firmarlo
+						  async function envia_doc_mail(reg) {
+
+							// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
+							var mensajesms1 = "se envia documento final, del proceso de firmas"
+							 //console.log(email)
+							//f_mail(mensajesms1,email,userResponse.content.data);
+							f_mail_sedngrid(mensajesms1,reg.content.email,reg.content,doc,"d-b16f6f624b8b4b1697767f2875d32ced",pdfBytes);
+
+						  }
+
+					
+					
+					//resolve(userResponse.content.data);
+					//console.log(userResponse.content.data)
+					
+					// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
+					var mensajesms1 = "se envia documento final, del proceso de firmas"
+                     //console.log(email)
+        			//f_mail(mensajesms1,email,userResponse.content.data);
+					//f_mail_sedngrid(mensajesms1,email,{},{},"d-b16f6f624b8b4b1697767f2875d32ced",pdfBytes);
+
+					
+					return ''
+		  
+		  
+		  // Write the PDF to a file
+		  //fs.writeFileSync('./public/uploads/xx1.pdf', await doc.save());
+		}		
+	};
+	
+app.get("/docxx", function(req, res){
+    var file = req.query.file;
+	f_crea_final(file)
+	res.json({});
+
+})		
+	
 
 module.exports = app;
