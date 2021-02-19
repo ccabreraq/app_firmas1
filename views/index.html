@@ -50,7 +50,7 @@
       position: absolute;
       top: 55px;
       left: 0;
-      right: 330px;
+      right: 1px;
       bottom: 0;
       overflow: auto;
 	  cursor:cell;
@@ -62,7 +62,7 @@
       right: 0;
       bottom: 0;
       overflow: auto;
-      width: 330px;
+      width: 1px;
       background: #eaeaea;
       border-left: 1px solid #d0d0d0;
     }
@@ -236,7 +236,9 @@
     <a  href="javascript://" class="crear"  title="Graba documento para proceso de firmas"><i class="fa fa-floppy-o " style="font-size:22px;color:#ffffff;text-shadow:2px 2px 2px #000000;" aria-hidden="true"></i></a>
 
 	</div>
+	
     </li>
+
  </ul>
 
 <!--  <a class="navbar-brand" href="javascript://" id="subir">
@@ -258,71 +260,13 @@
     <h4>Firmantes</h4>
     <div class="comment-list">
 
-      <div class="comment-list-container">
-        <div class="comment-list-item"></div>
-      </div>
-      <form class="comment-list-form" style="display:none;">
-        <input type="text" placeholder="Agrega comentario"/>
-      </form>
+       <form class="comment-list-form" style="display:none;">
+       </form>
 	  
 
     </div>
 	
-	<!-- The Modal -->
-	<div id="Modal_form" class="modal_f">
-
-	  <!-- Modal content -->
-	  <div class="modal-content_f">
-		<div class="modal-header_f">
-		  <span class="close_f">&times;</span>
-		  <h2>Firmante</h2>
-		</div>
-		<div class="modal-body_f">
-  			<div class="col-sm-12">
-              <input type="button"  id="qqaa"  class="btn btn-primary btn-lg btn-block" value="!!! Yo Soy el Firmante !!!">
-			</div>
-            <form id="myForm" class="was-validated">
-			  <div class="form-group row">
-				<div class="col-sm-9">
-				</div>
-			  </div>	
-
-			  <div class="form-group row">
-				<label for="cedula"  class="col-sm-3 col-form-label">Cedula:</label>
-				<div class="col-sm-9">
-				  <input type="text" id="cedulav" class="form-control" id="cedula" placeholder="cedula del firmante" pattern="[0-9]{1,9}" title="cedula solo debe contener numeros" required>
-				</div>
-			  </div>	
-			  <div class="form-group row">
-				<label for="nombres" class="col-sm-3 col-form-label">Nombres:</label>
-				<div class="col-sm-9">
-				  <input type="text" class="form-control" id="nombres" placeholder="Nombres del firmante" pattern="[a-zA-Z]{1,18}" title="nombres solo deben contener letras"required >
-				</div>
-			  </div>	
-			  <div class="form-group row">
-				<label for="apellidos" class="col-sm-3 col-form-label">Apellidos:</label>
-				<div class="col-sm-9">
-				  <input type="text" class="form-control" id="apellidos" placeholder="apellidos del firmante" pattern="[a-zA-Z]{1,18}" title="apellidos solo deben contener letras" required>
-				</div>
-			  </div>	
-			  <div class="form-group row">
-				<label for="celular" class="col-sm-3 col-form-label">Celular:</label>
-				<div class="col-sm-9">
-				  <input type="text" class="form-control" id="celular" placeholder="celular del firmate" pattern="[0-9]{1,10}" title="celular solo deben contener numeros" required>
-				</div>
-			  </div>	
-			  <div class="form-group row">
-				<label for="email" class="col-sm-3 col-form-label">Email:</label>
-				<div class="col-sm-9">
-				  <input type="email" class="form-control" id="email" placeholder="email del firmante" required>
-				</div>
-			  </div>
-			  <button type="submit" class="btn btn-primary">Grabar</button>		
-			</form>
-		</div>
-	  </div>
-
-	</div>		  	
+		  	
   </div>
 	<!-- The Modal creacion de documento-->
 	<div id="myModal" class="modal">
@@ -380,10 +324,65 @@
 
 	</div>  
 
+	<!-- The Modal -->
+	<div id="Modal_form" class="modal">
 
+	  <!-- Modal content -->
+	  <div class="modal-content">
+		<div class="modal-header_f">
+		  <span class="close_f">&times;</span>
+		  <h2>Firmante</h2>
+		</div>
+		<div class="modal-body">
+  			<div class="col-sm-12">
+              <input type="button"  id="qqaa"  class="btn btn-primary btn-lg btn-block" value="!!! Yo Soy el Firmante !!!">
+			</div>
+            <form id="myForm" class="was-validated">
+			  <div class="form-group row">
+				<div class="col-sm-9">
+				</div>
+			  </div>	
+
+			  <div class="form-group row">
+				<label for="cedula"  class="col-sm-3 col-form-label">Cedula:</label>
+				<div class="col-sm-9">
+				  <input type="text" id="cedulav" class="form-control" id="cedula" placeholder="cedula del firmante" pattern="[0-9]{1,10}" title="cedula solo debe contener numeros y tener menos de 10 digitos" required>
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="nombres" class="col-sm-3 col-form-label">Nombres:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="nombres" placeholder="Nombres del firmante" pattern="[a-zA-Z]{1,18}" title="nombres solo deben contener letras"required >
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="apellidos" class="col-sm-3 col-form-label">Apellidos:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="apellidos" placeholder="apellidos del firmante" pattern="[a-zA-Z]{1,18}" title="apellidos solo deben contener letras" required>
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="celular" class="col-sm-3 col-form-label">Celular:</label>
+				<div class="col-sm-9">
+				  <input type="text" class="form-control" id="celular" placeholder="celular del firmate" pattern="[0-9]{1,10}" title="celular solo deben contener numeros" required>
+				</div>
+			  </div>	
+			  <div class="form-group row">
+				<label for="email" class="col-sm-3 col-form-label">Email:</label>
+				<div class="col-sm-9">
+				  <input type="email" class="form-control" id="email" placeholder="email del firmante" required>
+				</div>
+			  </div>
+			  <button type="submit" class="btn btn-primary">Grabar</button>		
+			</form>
+		</div>
+	  </div>
+
+	</div>
 	
   <script src="shared/pdf.js"></script>
   <script src="shared/pdf_viewer.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
   <script src="./index.js"></script>
 </body>
 </html>
