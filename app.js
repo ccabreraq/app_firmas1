@@ -1531,9 +1531,8 @@ var maxPrice = function(req, res, next) {
 		  
           const pdfBytes = await pdfDoc.save();
 
-					fs.writeFile("public/uploads/prueba1.pdf", pdfBytes, {
-
-
+					await fs.writeFile("public/uploads/"+file+"_final.pdf", pdfBytes, {
+						
 					
 					}, function (err) {
 						console.log("captured page written to " + file);
@@ -1555,20 +1554,20 @@ var maxPrice = function(req, res, next) {
 							var mensajesms1 = "se envia documento final, del proceso de firmas"
 							 //console.log(email)
 							//f_mail(mensajesms1,email,userResponse.content.data);
-							f_mail_sedngrid(mensajesms1,reg.content.email,reg.content,doc,"d-b16f6f624b8b4b1697767f2875d32ced",pdfBytes);
+							f_mail_sedngrid(mensajesms1,reg.content.email,reg.content,doc,"d-b16f6f624b8b4b1697767f2875d32ced",pdfBytes);							
 
 						  }
-
-					
-					
-					//resolve(userResponse.content.data);
-					//console.log(userResponse.content.data)
-					
-					// ojo debo enviar correo a todos los firmantes copiandoles el documento pdf firmado digitalmente
-					var mensajesms1 = "se envia documento final, del proceso de firmas"
-                     //console.log(email)
-        			//f_mail(mensajesms1,email,userResponse.content.data);
-					//f_mail_sedngrid(mensajesms1,email,{},{},"d-b16f6f624b8b4b1697767f2875d32ced",pdfBytes);
+						  
+						await oc.files.putFile('/dos/uploads/'+file+'_final.pdf', './public/uploads/'+file+'_final.pdf').then(status => {
+							//res.status(200).send(err);
+							//response.send(status);
+							
+						}).catch(error => {
+							console.log(error)
+							//res.status(500).send(error);
+							//response.send(error);
+							return ''
+						});	  
 
 					
 					return ''
