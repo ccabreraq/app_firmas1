@@ -167,7 +167,17 @@ Resource(app, '', 'users', Users).rest({
 	});
 	
 	next();
-  }
+  },
+  afterDelete:function(req, res, next) {
+    //console.log(res.resource)
+	//console.log(res.resource.item)
+    var reg = {"id_usuario": res.resource.item._id}
+	Cupos.deleteOne(reg, function (err) {
+	  if(err) console.log(err);
+	  console.log("Successful deletion");
+	});	
+	next();
+  }  
 });
 Resource(app, '', 'formatos', Formatos).rest();
 Resource(app, '', 'templates', Templates).rest();
@@ -1524,7 +1534,7 @@ var maxPrice = function(req, res, next) {
 					  pagss.drawPage(firma_si, {
 						...firma_si_Dims,
 						x: reg.x - 5,
-						y: 710 - (270 + reg.y)
+						y: 710 - (312 + reg.y)
 					  });
 				  }
 		  
