@@ -1,9 +1,6 @@
 {
   "name": "pdf2",
   "version": "0.0.0",
-   "engines": { 
-	"node": "10.15.3"
-	},      
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -29,6 +26,6 @@
     "pdfjs-dist": "^2.6.347",
     "phantomjscloud": "^3.5.5",
     "resourcejs": "^2.3.2",
-	"sha1": "^1.1.1"
+    "sha1": "^1.1.1"
   }
 }
