@@ -35,6 +35,9 @@ oc.login('Adm_000000000', 'casaauto');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
 
+var sha1 = require('sha1');
+
+
 var app = express();
 
 var config = require('./config.json');
@@ -577,7 +580,13 @@ async function gen_pdf(file,rect,email) {
 		run_cupos().catch(err => console.log(err));
 
 		async function run_cupos() {
-			var xreg_cupo = await Cupos.findOne({id_usuario: req.body.usuario}).exec();	    
+			var clavex1 = req.body.usuario			
+			var usuario = await Users.find({ _id: req.body.usuario}).exec();	
+			if (usuario[0].padre) {
+				clavex1 = usuario[0].padre
+			}
+				
+			var xreg_cupo = await Cupos.findOne({id_usuario: clavex1}).exec();	    
 			tipos_cupos = xreg_cupo.tipo
 			console.log(xreg_cupo)
 			for (x of tipos_cupos) {
@@ -882,7 +891,14 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 	run_cupos().catch(err => console.log(err));
 
 	async function run_cupos() {
-		var xreg_cupo = await Cupos.findOne({id_usuario: req.body.usuario}).exec();	    
+		var clavex1 = req.body.usuario			
+		var usuario = await Users.find({ _id: req.body.usuario}).exec();	
+		if (usuario[0].padre) {
+			clavex1 = usuario[0].padre
+		}
+		
+		var xreg_cupo = await Cupos.findOne({id_usuario: clavex1}).exec();	    
+		//var xreg_cupo = await Cupos.findOne({id_usuario: req.body.usuario}).exec();	    
 		tipos_cupos = xreg_cupo.tipo
 		console.log(xreg_cupo)
 		for (x of tipos_cupos) {
@@ -1063,7 +1079,15 @@ app.get("/verifica_cupos", function(req, res){
 			if (xusuario.length == 0) {
 				res.status(401).send([]);
 			} else {
-				var q = await Cupos.find({ id_usuario: usuario}).exec();
+				
+				var clavex1 = usuario			
+				if (xusuario[0].padre) {
+					clavex1 = xusuario[0].padre
+				}
+				
+				
+				var q = await Cupos.find({ id_usuario: clavex1}).exec();
+				//var q = await Cupos.find({ id_usuario: usuario}).exec();
 				
 				var q1 = Firma_doc.find({usuario: pusuario}).sort({'fecha_creacion': -1}).limit(5);
 				var registx = await q1.exec();
@@ -1127,6 +1151,44 @@ var maxPrice = function(req, res, next) {
   );
   return next();
 };
+
+app.post('/link_pago', function(request, res) {
+
+	run().catch(err => res.send(err));
+
+	async function run() {
+		var xusuario = await f_link_pago(request.body);
+		
+		if (xusuario.length == 0) {
+			res.status(401).send('');
+		} else {
+		   res.status(200).send(xusuario);
+		}
+	   
+	}	
+	
+});	
+
+app.post('/envia_invitacion', function(request, res) {
+
+	run().catch(err => res.send(err));
+
+	async function run() {
+		var xusuario = await f_link_pago(request.body);
+		
+		var mensajesms1 = config.cliente_url+"#/registro_invitacion/"+request.body.id+"/"+request.body.cedula_i+"|"+request.body.nombres_i+"|"+request.body.apellidos_i+"|"+request.body.email_i+"|"+request.body.celular
+		var env_mail = await f_mail_sedngrid(mensajesms1,request.body.email_i,{},request.body,"d-a3cf9047d9394c04bdb8154b8a69d15a","");
+		
+		if (env_mail.length == 0) {
+			res.status(401).send('');
+		} else {
+		   res.status(200).send(env_mail);
+		}
+	   
+	}	
+	
+});	
+
 	
 	
 	///////////////////////////////////////////////////// funciones generales /////////////////////////////////////////////////////////	
@@ -1587,6 +1649,92 @@ var maxPrice = function(req, res, next) {
 		  //fs.writeFileSync('./public/uploads/xx1.pdf', await doc.save());
 		}		
 	};
+	
+	const f_link_pago = function(data) {
+	
+        //try {
+            //var requestbody = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ProcesarReferenciasCoe xmlns="http://tempuri.org/"><pProcesarReferenciasRq>&lt;ProcesarReferenciasRq&gt;&lt;PersonaDeudora&gt;&lt;Nombre&gt;VARNOMBRE&lt;/Nombre&gt;&lt;TipoIdentificacion&gt;VARTIPOIDENTIFICACION&lt;/TipoIdentificacion&gt;&lt;NumeroIdentificacion&gt;VARNUMEROIDENTIFICACION&lt;/NumeroIdentificacion&gt;&lt;Email&gt;VARCOREO&lt;/Email&gt;&lt;/PersonaDeudora&gt;&lt;IdentificadorCompania&gt;VARCOMPANIA&lt;/IdentificadorCompania&gt;&lt;Referencias&gt;&lt;Referencia&gt;&lt;Cabecera&gt;&lt;NumeroReferencia&gt;VARNUMERORFERENCIA&lt;/NumeroReferencia&gt;&lt;NumeroReferenciaOrigen&gt;VARNUMEROREFRENCIAORIGEN&lt;/NumeroReferenciaOrigen&gt;&lt;Moneda&gt;COP&lt;/Moneda&gt;&lt;ImporteTotal&gt;VARIMPORTETOTAL&lt;/ImporteTotal&gt;&lt;ImporteSubtotal&gt;VARIMPORTESUBTOTAL&lt;/ImporteSubtotal&gt;&lt;ImporteIva&gt;VARIMPORTEIVA&lt;/ImporteIva&gt;&lt;FechaEmision&gt;VARFECHAEMISION&lt;/FechaEmision&gt;&lt;FechaVencimiento&gt;VARFECHAVENCIMIENTO&lt;/FechaVencimiento&gt;&lt;/Cabecera&gt;&lt;/Referencia&gt;&lt;/Referencias&gt;&lt;/ProcesarReferenciasRq&gt;</pProcesarReferenciasRq><pClaveControl>' + sha1(data.compania + "1") + '</pClaveControl></ProcesarReferenciasCoe></soap:Body></soap:Envelope>'
+            var requestbody = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ProcesarReferenciasCoe xmlns="http://tempuri.org/"><pProcesarReferenciasRq>&lt;ProcesarReferenciasRq&gt;&lt;PersonaDeudora&gt;&lt;Nombre&gt;VARNOMBRE&lt;/Nombre&gt;&lt;TipoIdentificacion&gt;VARTIPOIDENTIFICACION&lt;/TipoIdentificacion&gt;&lt;NumeroIdentificacion&gt;VARNUMEROIDENTIFICACION&lt;/NumeroIdentificacion&gt;&lt;Email&gt;VARCOREO&lt;/Email&gt;&lt;/PersonaDeudora&gt;&lt;IdentificadorCompania&gt;VARCOMPANIA&lt;/IdentificadorCompania&gt;&lt;Referencias&gt;&lt;Referencia&gt;&lt;Cabecera&gt;&lt;NumeroReferencia&gt;VARNUMERORFERENCIA&lt;/NumeroReferencia&gt;&lt;NumeroReferenciaOrigen&gt;VARNUMEROREFRENCIAORIGEN&lt;/NumeroReferenciaOrigen&gt;&lt;Moneda&gt;COP&lt;/Moneda&gt;&lt;ImporteTotal&gt;VARIMPORTETOTAL&lt;/ImporteTotal&gt;&lt;ImporteSubtotal&gt;VARIMPORTESUBTOTAL&lt;/ImporteSubtotal&gt;&lt;ImporteIva&gt;VARIMPORTEIVA&lt;/ImporteIva&gt;&lt;FechaEmision&gt;VARFECHAEMISION&lt;/FechaEmision&gt;&lt;FechaVencimiento&gt;VARFECHAVENCIMIENTO&lt;/FechaVencimiento&gt;&lt;/Cabecera&gt;&lt;/Referencia&gt;&lt;/Referencias&gt;&lt;Extras&gt;&lt;Ref1&gt;&lt;/Ref1&gt;&lt;Ref2&gt;&lt;/Ref2&gt;&lt;Ref3&gt;&lt;/Ref3&gt;&lt;Ref4&gt;&lt;/Ref4&gt;&lt;Ref5&gt;VARREF5&lt;/Ref5&gt;&lt;/Extras&gt;&lt;/ProcesarReferenciasRq&gt;</pProcesarReferenciasRq><pClaveControl>' + sha1(data.compania + "1") + '</pClaveControl></ProcesarReferenciasCoe></soap:Body></soap:Envelope>'
+            requestbody = requestbody.replace("VARNOMBRE", data.nombre);
+            requestbody = requestbody.replace("VARCOMPANIA", data.compania); 
+            requestbody = requestbody.replace("VARTIPOIDENTIFICACION", data.tipoidentificacion); 
+            requestbody = requestbody.replace("VARNUMEROIDENTIFICACION", data.numeroidentificacion);
+            requestbody = requestbody.replace("VARCOREO", data.correo);
+            requestbody = requestbody.replace("VARIMPORTETOTAL", data.importetotal);
+            requestbody = requestbody.replace("VARIMPORTESUBTOTAL", data.importesubtotal);
+            requestbody = requestbody.replace("VARIMPORTEIVA", data.importeiva);
+            requestbody = requestbody.replace("VARFECHAEMISION", data.fechaemision); 
+            requestbody = requestbody.replace("VARFECHAVENCIMIENTO", data.fechavencimiento);  
+            requestbody = requestbody.replace("VARNUMERORFERENCIA", data.numeroreferencia);
+            requestbody = requestbody.replace("VARNUMEROREFRENCIAORIGEN", data.numeroreferenciaorigen);
+			
+            //requestbody = requestbody.replace("VARREF5", data.ref5);
+			
+			var coeurl = "https://pre.irecaudocoe.transfiriendo.com:456/"
+
+			console.log(requestbody)
+            var options = {
+                method: 'POST',
+                url: coeurl + 'Irecaudocoe/WebServices/Public/PublicServices.asmx',
+                headers: {
+                    soapaction: 'http://tempuri.org/ProcesarReferenciasCoe',
+                    'content-type': 'text/xml'
+                },
+                body: requestbody
+            };
+            console.log("//////////////////////////////////");
+            console.log(requestbody);
+            console.log("//////////////////////////////////");
+			
+			
+			  return new Promise((resolve, reject) => {
+
+				request(options, (error, response, body) => {
+				  if (response) {
+					console.log(body)
+					  
+                    var inicio = body.search("&lt;IdentificadorTransaccion&gt;") + 32;
+                    var fin = body.search("&lt;/IdentificadorTransaccion&gt;");
+                    var IdentificadorTransaccion = body.substring(inicio, fin);
+                    body1 = {
+                        "IdentificadorTransaccion": IdentificadorTransaccion,
+                        "Link": coeurl + "IRecaudoCoe/WebForms/Pago/Views/GenerarTransaccion.aspx?input=" + IdentificadorTransaccion
+                    };
+					console.log(inicio)
+					console.log(fin)
+                    if (inicio > 0 && fin > 0) {
+                        return resolve(body1)
+                    } else {
+						//return reject( "no se genero la refrencia de pago") 
+                    body1 = {
+                        "IdentificadorTransaccion": "no se genero la refrencia de pago",
+                        "Link": ""
+                    };
+						
+						return resolve(body1)
+                     }
+
+					  //return resolve(dato1);
+					
+				  }
+				  if (error) {
+					  //console.log(error)
+					return reject(error);
+					//return resolve(error)
+				  }
+				});  
+						  
+			  }); 
+			
+			
+			
+			
+			
+         //} catch (err) {
+		//	return (err);
+        //}
+    }	
+	
 	
 app.get("/docxx", function(req, res){
     var file = req.query.file;
