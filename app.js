@@ -1702,7 +1702,8 @@ app.post('/certifica_doc', upload1.any(), async (req, res) => {
 	  
 	   // Fetch the emblem image
 	  //var emblemImageBytes = await QRCode.toDataURL("http://localhost:8080/trae_poliza_certificada?nombre="+reg.originalname)
-	  var emblemImageBytes = await QRCode.toDataURL("d22101d5d402ab181a66b71bb950ff2892f6d2a1e436d61c4fb1011e9c49a77a| "+config.cliente_url+"/registro_invitacion/"+datos.numPoliza+'/'+datos.numAnexo)
+	  //var emblemImageBytes = await QRCode.toDataURL("d22101d5d402ab181a66b71bb950ff2892f6d2a1e436d61c4fb1011e9c49a77a| "+config.cliente_url+"/registro_invitacion/"+datos.numPoliza+'/'+datos.numAnexo)
+	  var emblemImageBytes = await QRCode.toDataURL("d22101d5d402ab181a66b71bb950ff2892f6d2a1e436d61c4fb1011e9c49a77a| https://cumplimiento.jeysonlesmes.com/900032159/verify")
 
 	  const pngImage = await pdfDoc.embedPng(emblemImageBytes)
 
