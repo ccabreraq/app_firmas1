@@ -1,0 +1,71 @@
+{
+  "_from": "carbone",
+  "_id": "carbone@2.1.1",
+  "_inBundle": false,
+  "_integrity": "sha512-LVFAKftoKu+K6/o2rzmthuRpq3YxxyqNlNqysmiPpSYWtUJhoclxfwcGLczAmrp+cPLFyAZgFYaXehEli5LxTw==",
+  "_location": "/carbone",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "carbone",
+    "name": "carbone",
+    "escapedName": "carbone",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/carbone/-/carbone-2.1.1.tgz",
+  "_shasum": "fa6b33df16e56e915879d44f6162289272a73d08",
+  "_spec": "carbone",
+  "_where": "C:\\Users\\cacabrera\\NODE_APP\\pdf4",
+  "author": {
+    "name": "David Grelaud"
+  },
+  "bin": {
+    "carbone": "bin/carbone"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "debug": "=4.1.1",
+    "moment": "=2.27.0",
+    "timsort": "=0.3.0",
+    "which": "=2.0.2",
+    "yauzl": "=2.10.0",
+    "yazl": "=2.5.1"
+  },
+  "deprecated": false,
+  "description": "Fast, Simple and Powerful report generator. Injects JSON and produces PDF, DOCX, XLSX, ODT, PPTX, ODS, ...!",
+  "devDependencies": {
+    "eslint": "=7.7.0",
+    "mocha": "=8.1.3"
+  },
+  "engines": {
+    "node": ">= 10.15.0"
+  },
+  "homepage": "https://carbone.io",
+  "keywords": [
+    "report",
+    "document",
+    "pdf",
+    "xslx",
+    "docx",
+    "odt",
+    "ods",
+    "json"
+  ],
+  "license": "Apache-2.0",
+  "main": "./lib",
+  "name": "carbone",
+  "scripts": {
+    "lint": "eslint ./lib/**.js ./test/**.js ./formatters/**.js",
+    "lint:fix": "eslint ./lib/**.js ./test/**.js ./formatters/**.js --fix",
+    "postpublish": "PACKAGE_VERSION=$(cat package.json | grep \\\"version\\\" | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && git tag $PACKAGE_VERSION && git push origin $PACKAGE_VERSION && git push github-origin $PACKAGE_VERSION",
+    "test": "node ./node_modules/mocha/bin/mocha test --timeout 100000 --exit"
+  },
+  "version": "2.1.1"
+}

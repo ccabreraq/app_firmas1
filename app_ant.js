@@ -15,7 +15,7 @@ var fs = require('fs');
 const fetch = require('node-fetch');
 var QRCode = require('qrcode')
 
-const carbone = require('./carbone1');
+const carbone = require('carbone');
 var convertapi = require('convertapi')('UWYxOg2XOY7eboVI');
 
 const { PDFDocument } = require('pdf-lib');
@@ -29,8 +29,6 @@ var indexRouter = require('./routes/index');
 var owncloud = require('js-owncloud-client');
 var rurl = 'https://pre.dinicloud.transfiriendo.com/';
 var rurlwebdav = rurl + "remote.php/webdav/";
-
-var Readable = require('stream').Readable
 
 var oc = new owncloud(rurl);
 oc.login('Adm_000000000', 'casaauto');
@@ -1215,8 +1213,7 @@ app.post("/crea_template", bodyParser.json(), function(req, res){
 			  var registro = {usuario: clave, nombre:'prueba2',descripcion:'prueba2 - cedula xx',otro:'',url:'',fecha_creacion:new Date(), rect:req.body.rect ,firmantes:firmantes, status: 'sin iniciar', num_firmantes:firmantes.length , num_firmados:0 , html: ''}
                
                var options = { method: 'POST',
-                 // url: "http://localhost:8080/firma_doc",
-                 url: config.mi_url+"/firma_doc",
+                  url: "http://localhost:8080/firma_doc",
 
                   body: JSON.stringify(registro),
 				  headers: {
@@ -1803,129 +1800,8 @@ app.get('/trae_poliza_certificada',function(req,res){
 		
 		lee_d1()
 })	
-
-
-app.post('/parcea_doc1', function(request, res) {
-
-	run().catch(err => res.send(err));
-
-	async function run() {
-		var xusuario = await f_parcea_doc(request.body.pathdoc,request.body.datos,request.body.options);
-		if (xusuario.resultado == 'error') {
-			res.status(401).send(xusuario.data);
-		} else {
-		   res.status(200).send(xusuario.data);
-		}
-	   
-	}
-})	
-
-
-app.post('/parcea_doc', function(request, res) {
-
-	console.log(request.body)
-    flattenForm().catch(err => res.send({resultado:'error',data:err}));
-	async function flattenForm() {
-      // Fetch the PDF with form fields
-	  const djson = request.body.datos
-    	console.log(djson.Text1)
-      const formUrl = config.mi_url+'/'+request.body.formato;
-      //console.log('aaa');
-      const formPdfBytes = await fetch(formUrl).then((res) =>
-        res.arrayBuffer()
-      );
-      //console.log('bbb');
-      // Load a PDF with form fields
-      const pdfDoc = await PDFDocument.load(formPdfBytes);
-
-      // Get the form containing all the fields
-      const form = pdfDoc.getForm();
-
-      // Fill the form's fields
-	  
-	  for (const property in djson) {
-		  console.log(property)
-		  console.log(djson[property]);
-          form.getTextField(property).setText(djson[property]);
-		  
-	  }
-	  
-      //form.getTextField('Text1').setText('XXXXXXXXXXXXXXXXXXXt');
-      //form.getTextField('Text2').setText('Some Text');
-      //form.getTextField('Text3').setText('Some Text');
-      //form.getTextField('Text5').setText('Some Text');
-
-
-      // Flatten the form's fields
-      form.flatten();
-
-      // Serialize the PDFDocument to bytes (a Uint8Array)
-      const pdfBytes = await pdfDoc.save();
-      const resp1 =  Buffer.from(pdfBytes).toString('base64');
-	  
-	  res.status(200).send({resultado:'ok',data:resp1});
-	  
-      // Trigger the browser to download the PDF document
-      //download(
-       // pdfBytes,
-       // 'pdf-lib_form_flattening_example.pdf',
-       // 'application/pdf'
-      //);
-    }
-
-})
 	
 	///////////////////////////////////////////////////// funciones generales /////////////////////////////////////////////////////////	
-	// genera pdf de template y data
-	const f_parcea_doc = function(pathdoc,data,options) {
-
-		  return new Promise((resolve, reject) => {
-			  
-			  data = {  nombre_paciente: 'John',  lastname : 'Doe'};
-
-			  carbone.render('./public/prueba1.docx', data, {}, function(err, result){
-				  if (err) {
-					  //return console.log(err);
-					  return reject({resultado:'error',data:err});
-				  }
-				  console.log(result)
-				  
-					// get readble stream from buffer
-					var stream = new Readable()
-					stream.push(result);
-					stream.push(null);
-
-					// Upload stream to the API. When uploading stream, file name must be provided.
-					var uploadResult = convertapi.upload(stream, 'orden.docx');
-
-					convertapi.convert('pdf', { File: uploadResult })
-					  .then(function(result1) {
-						//return result1.saveFiles(dir);
-						console.log(result1.file.url)
-						resolve({resultado:'ok',data:result1.file.url})
-						//resolve({resultado:'ok',data:result1.file.url})
-						//fetch(result1.file.url)
-						//  .then(response => response.blob())
-						//  .then(data => resolve({resultado:'ok',data:data}));
-						//async function lee_dl1() {	
-						//	const existingPdfBytes = await fetch(result1.file.url).then(res => res.arrayBuffer())
-						//	resolve({resultado:'ok',data:existingPdfBytes});
-						//}
-						//lee_dl1()
-					  })
-					  .catch(function(e) {
-						console.error(e.toString());
-						return reject({resultado:'error',data:e.toString()});
-					  });				  
-				  
-				  // write the result
-				  //fs.writeFileSync('./public/result1.docx', result);
-				  //return resolve({resultado:'ok',data:result});							  
-		      }); 
-		  })
-	}
-
-
 	// genera pdf de template y datos enviados
 	const f_template_doc = function(mensaje) {
 
@@ -2384,7 +2260,7 @@ app.post('/parcea_doc', function(request, res) {
 	const f_crea_final = function(file, doc, d_biometricos) {
 		
          ////doc = {"_id":{"$oid":"6029bcfa7fa7db38680b5591"},"rect":[{"type":"area","x":49.33333333333333,"y":325.3333333333333,"width":252.66666666666669,"height":69.33333333333337,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"ecee3f73-3320-4b1c-a500-48ab36234adc","page":2},{"type":"area","x":320.6666666666667,"y":325.3333333333333,"width":231.33333333333331,"height":73.33333333333337,"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","page":2}],"firmantes":[{"class":"Comment","uuid":"3f9f8dbe-fba6-4103-80b3-f0529988fbb6","annotation":"ecee3f73-3320-4b1c-a500-48ab36234adc","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}},{"class":"Comment","uuid":"4ccf2410-8d5f-4f00-a57a-3eb725a29f8f","annotation":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"F88888","descripcion":"F888","otro":"","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1613348090122"}},"status":"sin iniciar","num_firmantes":{"$numberInt":"2"},"num_firmados":{"$numberInt":"0"},"__v":{"$numberInt":"0"}}
-         doc = {"_id":{"$oid":"6114714eb88269046c430d10"},"rect":[{"type":"area","x":68.66666666666667,"y":82,"width":290,"height":82,"backgroundColor":"red","status":"firmado","width_or":56,"height_or":15.333333333333329,"class":"Annotation","uuid":"bdcc6476-1cfb-4986-b6ff-1c35bead4ebe","page":1,"content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":{"$date":{"$numberLong":"1628729743135"}},"token_firma":"60f70b925c3490325c97aa38","url_imagen":"https://biometria1.herokuapp.com/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg"}}],"firmantes":[{"class":"Comment","uuid":"97867dad-fd23-4041-b341-d7deb0e7a164","annotation":"bdcc6476-1cfb-4986-b6ff-1c35bead4ebe","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":{"$date":{"$numberLong":"1628729743135"}},"token_firma":"60f70b925c3490325c97aa38","url_imagen":"https://biometria1.herokuapp.com/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"dddddd ddddddd","descripcion":"ddddddddddddddddd","otro":"pendiente","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1628729678872"}},"status":"finalizado","num_firmantes":{"$numberInt":"1"},"num_firmados":{"$numberInt":"1"},"__v":{"$numberInt":"0"}}
+         doc = {"_id":{"$oid":"6114714eb88269046c430d10"},"rect":[{"type":"area","x":68.66666666666667,"y":82,"width":290,"height":82,"backgroundColor":"red","status":"firmado","width_or":56,"height_or":15.333333333333329,"class":"Annotation","uuid":"bdcc6476-1cfb-4986-b6ff-1c35bead4ebe","page":2,"content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":{"$date":{"$numberLong":"1628729743135"}},"token_firma":"60f70b925c3490325c97aa38","url_imagen":"https://60eff62f399f.ngrok.io/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg"}}],"firmantes":[{"class":"Comment","uuid":"97867dad-fd23-4041-b341-d7deb0e7a164","annotation":"bdcc6476-1cfb-4986-b6ff-1c35bead4ebe","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"ccabreraq@gmail.com","status":"firmado","fecha":{"$date":{"$numberLong":"1628729743135"}},"token_firma":"60f70b925c3490325c97aa38","url_imagen":"https://60eff62f399f.ngrok.io/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"dddddd ddddddd","descripcion":"ddddddddddddddddd","otro":"pendiente","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1628729678872"}},"status":"finalizado","num_firmantes":{"$numberInt":"1"},"num_firmados":{"$numberInt":"1"},"__v":{"$numberInt":"0"}}
         ////var reg1 = {"_id":{"$oid":"6029bcfa7fa7db38680b5591"},"rect":[{"type":"area","x":49.33333333333333,"y":425.3333333333333,"width":{"$numberDouble":"252.66666666666669"},"height":{"$numberDouble":"69.33333333333337"},"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"ecee3f73-3320-4b1c-a500-48ab36234adc","page":2},{"type":"area","x":340.6666666666667,"y":425.3333333333333,"width":{"$numberDouble":"231.33333333333331"},"height":{"$numberDouble":"73.33333333333337"},"backgroundColor":"red","status":"pendiente","class":"Annotation","uuid":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","page":7}],"firmantes":[{"class":"Comment","uuid":"3f9f8dbe-fba6-4103-80b3-f0529988fbb6","annotation":"ecee3f73-3320-4b1c-a500-48ab36234adc","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}},{"class":"Comment","uuid":"4ccf2410-8d5f-4f00-a57a-3eb725a29f8f","annotation":"94ba245f-b0f3-438c-8f07-350f49a8bfb1","content":{"cedula":"79299848","nombres":"Carlos","apellidos":"Cabrera","celular":"3204903664","email":"test@example.com","status":"pendiente"}}],"usuario":"5ef0eafa50fb8041d446173d","nombre":"F88888","descripcion":"F888","otro":"","url":"uploads/user1_aa.pdf","fecha_creacion":{"$date":{"$numberLong":"1613348090122"}},"status":"sin iniciar","num_firmantes":{"$numberInt":"2"},"num_firmados":{"$numberInt":"0"},"__v":{"$numberInt":"0"}}		
         d_biometricos = {"_id":"60f70b925c3490325c97aa38","result":{"documentNumber":"79.299.848","firstName":"CARLOS","middleName":"ENRIQUE","lastName":"CABRERA QUIÑONES","fullName":"CARLOS ENRIQUE CABRERA QUIÑONES","documentType":"I","documentSide":"FRONT","issuerOrg_full":"Colombia","issuerOrg_iso2":"CO","issuerOrg_iso3":"COL","nationality_full":"Colombia","nationality_iso2":"CO","nationality_iso3":"COL","internalId":"506"},"face":{"isIdentical":true,"confidence":"0.796"},"verification":{"passed":true,"result":{"face":true}},"output":"https://60eff62f399f.ngrok.io/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_idfront.jpg","outputface":"https://60eff62f399f.ngrok.io/foto_verificacion?nombre=DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg","authentication":{"score":1},"vaultid":"Bpvb4G00RV93GnLL2m0K97QPzSLwp7lc","matchrate":1,"executionTime":6.027968883514404,"responseID":"46ed396a8c89ded7b77ab290e45e8a9a","quota":5,"credit":49,"autenticacion":"AUTENTICO","codid":"79299848","idfront":"DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_idfront.jpg","idback":"DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_idback.jpg","selfi":"DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_selfi.jpg","foto":"DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR_foto_doc.jpg","cod_session":"DEMO-7bb8331d-501a-4556-8584-dd2e604e8d4f-ENR","iat":1628630752,"exp":1628631032}
 
